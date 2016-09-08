@@ -98,11 +98,9 @@ BEGIN
 			DECLARE @outStr AS NVARCHAR(MAX)=N''
 			DECLARE @cmdStr AS NVARCHAR(MAX)=N''
 			
-
-			+ N', R1.BBL +'',''+ R1.UniqueKey +'',''+R1.Easment AS IdentifyingValue'
-
+						
 			-- Create the Audit statement
-			EXEC Utilities.util.[CreateValuesFragementForAudit] 'AreaAbstract', 'MortgageDeedLot', 'UniqueKey, DateLastUpdated', @outStr OUTPUT, @cmdStr OUTPUT, 'acris'
+			EXEC Utilities.util.[CreateValuesFragementForAudit] 'AreaAbstractNew', 'MortgageDeedLot', 'UniqueKey, DateLastUpdated', @outStr OUTPUT, @cmdStr OUTPUT, 'acris'
 			
 			SET @outStr = N' INSERT INTO dbo.ColumnTransactionCommitted' +
 						  N' SELECT '+Utilities.util.fninQuotes(@tableName)+N' AS TableName'
@@ -137,7 +135,7 @@ BEGIN
 			-- Create the Update statement
 			SET @outStr=''
 			SET @cmdStr=''
-			EXEC Utilities.util.[CreateSetFragementForUpdate] 'AreaAbstract', 'MortgageDeedLot', 'BBL + UniqueKey + Easement', @outStr OUTPUT, @cmdStr OUTPUT, 'acris'
+			EXEC Utilities.util.[CreateSetFragementForUpdate] 'AreaAbstractNew', 'MortgageDeedLot', 'BBL + UniqueKey + Easement', @outStr OUTPUT, @cmdStr OUTPUT, 'acris'
 
 			SET @outStr = N' UPDATE a '
 						+ @outStr +

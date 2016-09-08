@@ -3,24 +3,22 @@ GO
 SET ANSI_NULLS ON
 GO
 
-
-
 -- =============================================
 -- Author:					Raj Sethi
 
--- Creation date:			09/06/2016
+-- Creation date:			09/08/2016
 
 -- Mofifications dates:		
 
--- Description:				This stored procedure inserts and updates new records in acris.MortgageDeedMaster table based on acris.tfnMortgageDeedMasterDataDaily
+-- Description:				This stored procedure inserts and updates new records in acris.MortgageDeedRemark table based on acris.tfnMortgageDeedRemarkDataDaily
 --							function. It also inserts audit records for all data inserted and updated.
  
 
--- Input tables:			acris.MortgageDeedMaster
---							acris.tfnMortgageDeedMasterDataDaily
+-- Input tables:			acris.MortgageDeedRemark
+--							acris.tfnMortgageDeedRemarkDataDaily
 --							
 
--- Tables modified:			acris.MortgageDeedMaster
+-- Tables modified:			acris.MortgageDeedRemark
 
 -- Arguments:				@DateTimeStampStr - DateTimeStamp of when the actual daily import file was created
 
@@ -29,7 +27,7 @@ GO
 -- Where used:				In [acris].[MortgageDeedDataDailyImport] stored procedure
 
 -- =============================================
-CREATE PROCEDURE [Acris].[MortgageDeedMasterDataDailyImport](@DateTimeStampStr AS VARCHAR(20), @ErrorMessage AS VARCHAR(MAX) OUTPUT)
+CREATE PROCEDURE [Acris].[MortgageDeedRemarkDataDailyImport](@DateTimeStampStr AS VARCHAR(20), @ErrorMessage AS VARCHAR(MAX) OUTPUT)
 AS
 BEGIN
 	
@@ -37,8 +35,8 @@ BEGIN
 	
 	SET NOCOUNT ON;
 	DECLARE @DateTimeStamp AS DATETIME
-	DECLARE @tableName AS VARCHAR(150) = 'acris.MortgageDeedMaster'
-	DECLARE @IdentifyingColumnName AS VARCHAR(255) = 'UniqueKey'
+	DECLARE @tableName AS VARCHAR(150) = 'acris.MortgageDeedRemark'
+	DECLARE @IdentifyingColumnName AS VARCHAR(255) = 'UniqueKey + Sequence'
 	
 	
 	BEGIN TRY
@@ -58,21 +56,21 @@ BEGIN
 			-- Insert audit records for new rows to be inserted
 			INSERT INTO dbo.RowTransactionCommitted
 			--DECLARE @DateTimeStamp AS DATETIME = CONVERT(DATETIME,'2016-04-18 00:00:00',120)
-			--DECLARE @tableName AS VARCHAR(150) = 'acris.MortgageDeedMaster'
-			--DECLARE @IdentifyingColumnName AS VARCHAR(255) = 'UniqueKey'
+			--DECLARE @tableName AS VARCHAR(150) = 'acris.MortgageDeedRemark'
+			--DECLARE @IdentifyingColumnName AS VARCHAR(255) = 'UniqueKey + Sequence'
 			SELECT	@tableName
 					,@IdentifyingColumnName
-					,a.UniqueKey
+					,a.UniqueKey + ',' +a.[Sequence]
 					, 1, 0, 0
 					,@DateTimeStamp
 					,GETDATE() 
-			FROM  [stage].[tfnMortgageDeedMasterDataDaily]('A') a
+			FROM  [stage].[tfnMortgageDeedRemarkDataDaily]('A') a
 		
 
 			if @Mode<>'DEBUG'
 			--Actually Insert Records
-				INSERT INTO acris.MortgageDeedMaster
-				SELECT a.* FROM [stage].[tfnMortgageDeedMasterDataDaily]('A') a
+				INSERT INTO acris.MortgageDeedRemark
+				SELECT a.* FROM [stage].[tfnMortgageDeedRemarkDataDaily]('A') a
 				
 
 			---------------------------------------------------------------------------
@@ -82,42 +80,42 @@ BEGIN
 			-- Insert audit records for rows updated
 			INSERT INTO dbo.RowTransactionCommitted
 			--DECLARE @DateTimeStamp AS DATETIME = CONVERT(DATETIME,'2016-04-18 00:00:00',120)
-			--DECLARE @tableName AS VARCHAR(150) = 'acris.MortgageDeedMaster'
-			--DECLARE @IdentifyingColumnName AS VARCHAR(255) = 'UniqueKey'
+			--DECLARE @tableName AS VARCHAR(150) = 'acris.MortgageDeedRemark'
+			--DECLARE @IdentifyingColumnName AS VARCHAR(255) = 'UniqueKey + Sequence'
 			SELECT @tableName, @IdentifyingColumnName
-			       ,a.UniqueKey
+			       ,a.UniqueKey + ',' +a.[Sequence]
 				   ,0, 0, 1, @DateTimeStamp, GETDATE() 
-			FROM[stage].[tfnMortgageDeedMasterDataDaily]('U') a
+			FROM[stage].[tfnMortgageDeedRemarkDataDaily]('U') a
 				
 
 			--FOR DEBUGGING DO NOT DELETE
 			--DECLARE @DateTimeStamp AS DATETIME = CONVERT(DATETIME,'2016-04-18 00:00:00',120)
-			--DECLARE @tableName AS VARCHAR(150) = 'acris.MortgageDeedMaster'
-			--DECLARE @IdentifyingColumnName AS VARCHAR(255) = 'UniqueKey'
+			--DECLARE @tableName AS VARCHAR(150) = 'acris.MortgageDeedRemark'
+			--DECLARE @IdentifyingColumnName AS VARCHAR(255) = 'UniqueKey + Sequence'
 
 			-- Insert Columns changed in each row with old and new value
 			DECLARE @outStr AS NVARCHAR(MAX)=N''
 			DECLARE @cmdStr AS NVARCHAR(MAX)=N''
 			
 			-- Create the Audit statement
-			EXEC Utilities.util.[CreateValuesFragementForAudit] 'AreaAbstractNew', 'MortgageDeedMaster', 'UniqueKey, DateLastUpdated', @outStr OUTPUT, @cmdStr OUTPUT, 'acris'
+			EXEC Utilities.util.[CreateValuesFragementForAudit] 'AreaAbstractNew', 'MortgageDeedRemark', 'UniqueKey, Sequence, DateLastUpdated', @outStr OUTPUT, @cmdStr OUTPUT, 'acris'
 			
 			SET @outStr = N' INSERT INTO dbo.ColumnTransactionCommitted' +
 						  N' SELECT '+Utilities.util.fninQuotes(@tableName)+N' AS TableName'
 						+ N','+ Utilities.util.fninQuotes(@IdentifyingColumnName)+N' AS IdentifyingColumnName'
-						+ N', R1.UniqueKey AS IdentifyingValue'
+						+ N', R1.UniqueKey +'',''+R1.Sequence AS IdentifyingValue'
 						+ N',C.COL AS [ColumnName]'
 						+ N',C.VAL1 AS NewValue'
 						+ N',C.VAL2 AS OldValue'
 						+ N',@inDateTimeStamp AS TransactionDateTime'
 						+ N',GETDATE() AS DateTimeProcessed' 
-						+ N' FROM  stage.tfnMortgageDeedMasterDataDaily(''U'') R1'
-						+ N' INNER JOIN acris.MortgageDeedMaster R2 ON R1.UniqueKey=R2.UniqueKey'
+						+ N' FROM  stage.tfnMortgageDeedRemarkDataDaily(''U'') R1'
+						+ N' INNER JOIN acris.MortgageDeedRemark R2 ON R1.UniqueKey=R2.UniqueKey AND R1.Sequence=R2.Sequence'
 						+ N' CROSS APPLY	( '
 						+ @outStr + N') '
 						+ N' C (COL, VAL1, VAL2)'
 						+ N' WHERE (C.Val1<>C.Val2) OR (C.Val1 IS NOT NULL AND C.Val2 IS NULL) OR (C.Val1 IS NULL AND C.Val2 IS NOT NULL)'
-						+ N' ORDER BY R1.UniqueKey'
+						+ N' ORDER BY R1.UniqueKey, R1.Sequence'
 			
 			--FOR DEBUGGING DO NOT DELETE
 			--SELECT  @outStr OUTPUT, @cmdStr OUTPUT
@@ -127,20 +125,20 @@ BEGIN
 			
 			--FOR DEBUGGING DO NOT DELETE
 			--DECLARE @DateTimeStamp AS DATETIME = CONVERT(DATETIME,'2016-04-18 00:00:00',120)
-			--DECLARE @tableName AS VARCHAR(150) = 'acris.MortgageDeedMaster'
-			--DECLARE @IdentifyingColumnName AS VARCHAR(255) = 'UniqueKey'
+			--DECLARE @tableName AS VARCHAR(150) = 'acris.MortgageDeedRemark'
+			--DECLARE @IdentifyingColumnName AS VARCHAR(255) = 'UniqueKey + Sequence'
 			--DECLARE @outStr AS NVARCHAR(MAX)=N''
 			--DECLARE @cmdStr AS NVARCHAR(MAX)=N''
 			
 			-- Create the Update statement
 			SET @outStr=''
 			SET @cmdStr=''
-			EXEC Utilities.util.[CreateSetFragementForUpdate] 'AreaAbstractNew', 'MortgageDeedMaster', 'UniqueKey', @outStr OUTPUT, @cmdStr OUTPUT, 'acris'
+			EXEC Utilities.util.[CreateSetFragementForUpdate] 'AreaAbstractNew', 'MortgageDeedRemark', 'UniqueKey, Sequence', @outStr OUTPUT, @cmdStr OUTPUT, 'acris'
 
 			SET @outStr = N' UPDATE a '
 						+ @outStr +
-						+ N' FROM acris.MortgageDeedMaster a, stage.tfnMortgageDeedMasterDataDaily(''U'') b'
-						+ N' WHERE a.UniqueKey=b.UniqueKey'
+						+ N' FROM acris.MortgageDeedRemark a, stage.tfnMortgageDeedRemarkDataDaily(''U'') b'
+						+ N' WHERE a.UniqueKey=b.UniqueKey and a.Sequence=b.Sequence'
 						
 			--FOR DEBUGGING DO NOT DELETE
 			--SELECT  @outStr OUTPUT, @cmdStr OUTPUT

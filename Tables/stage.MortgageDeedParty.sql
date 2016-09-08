@@ -3,7 +3,6 @@ CREATE TABLE [stage].[MortgageDeedParty]
 [RecordId] [bigint] NOT NULL IDENTITY(1, 1),
 [UniqueKey] [varchar] (16) COLLATE SQL_Latin1_General_CP1_CI_AS NOT NULL,
 [PartyType] [varchar] (1) COLLATE SQL_Latin1_General_CP1_CI_AS NOT NULL,
-[CompressedName] [varchar] (70) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
 [Name] [varchar] (70) COLLATE SQL_Latin1_General_CP1_CI_AS NOT NULL,
 [Address1] [varchar] (60) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
 [Address2] [varchar] (60) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,

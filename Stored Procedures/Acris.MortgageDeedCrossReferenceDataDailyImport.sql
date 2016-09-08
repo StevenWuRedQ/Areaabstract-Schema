@@ -3,24 +3,22 @@ GO
 SET ANSI_NULLS ON
 GO
 
-
-
 -- =============================================
 -- Author:					Raj Sethi
 
--- Creation date:			09/06/2016
+-- Creation date:			09/08/2016
 
 -- Mofifications dates:		
 
--- Description:				This stored procedure inserts and updates new records in acris.MortgageDeedMaster table based on acris.tfnMortgageDeedMasterDataDaily
+-- Description:				This stored procedure inserts and updates new records in acris.MortgageDeedCrossReference table based on acris.tfnMortgageDeedCrossReferenceDataDaily
 --							function. It also inserts audit records for all data inserted and updated.
  
 
--- Input tables:			acris.MortgageDeedMaster
---							acris.tfnMortgageDeedMasterDataDaily
+-- Input tables:			acris.MortgageDeedCrossReference
+--							acris.tfnMortgageDeedCrossReferenceDataDaily
 --							
 
--- Tables modified:			acris.MortgageDeedMaster
+-- Tables modified:			acris.MortgageDeedCrossReference
 
 -- Arguments:				@DateTimeStampStr - DateTimeStamp of when the actual daily import file was created
 
@@ -29,7 +27,7 @@ GO
 -- Where used:				In [acris].[MortgageDeedDataDailyImport] stored procedure
 
 -- =============================================
-CREATE PROCEDURE [Acris].[MortgageDeedMasterDataDailyImport](@DateTimeStampStr AS VARCHAR(20), @ErrorMessage AS VARCHAR(MAX) OUTPUT)
+CREATE PROCEDURE [Acris].[MortgageDeedCrossReferenceDataDailyImport](@DateTimeStampStr AS VARCHAR(20), @ErrorMessage AS VARCHAR(MAX) OUTPUT)
 AS
 BEGIN
 	
@@ -37,7 +35,7 @@ BEGIN
 	
 	SET NOCOUNT ON;
 	DECLARE @DateTimeStamp AS DATETIME
-	DECLARE @tableName AS VARCHAR(150) = 'acris.MortgageDeedMaster'
+	DECLARE @tableName AS VARCHAR(150) = 'acris.MortgageDeedCrossReference'
 	DECLARE @IdentifyingColumnName AS VARCHAR(255) = 'UniqueKey'
 	
 	
@@ -58,7 +56,7 @@ BEGIN
 			-- Insert audit records for new rows to be inserted
 			INSERT INTO dbo.RowTransactionCommitted
 			--DECLARE @DateTimeStamp AS DATETIME = CONVERT(DATETIME,'2016-04-18 00:00:00',120)
-			--DECLARE @tableName AS VARCHAR(150) = 'acris.MortgageDeedMaster'
+			--DECLARE @tableName AS VARCHAR(150) = 'acris.MortgageDeedCrossReference'
 			--DECLARE @IdentifyingColumnName AS VARCHAR(255) = 'UniqueKey'
 			SELECT	@tableName
 					,@IdentifyingColumnName
@@ -66,13 +64,13 @@ BEGIN
 					, 1, 0, 0
 					,@DateTimeStamp
 					,GETDATE() 
-			FROM  [stage].[tfnMortgageDeedMasterDataDaily]('A') a
+			FROM  [stage].[tfnMortgageDeedCrossReferenceDataDaily]('A') a
 		
 
 			if @Mode<>'DEBUG'
 			--Actually Insert Records
-				INSERT INTO acris.MortgageDeedMaster
-				SELECT a.* FROM [stage].[tfnMortgageDeedMasterDataDaily]('A') a
+				INSERT INTO acris.MortgageDeedCrossReference
+				SELECT a.* FROM [stage].[tfnMortgageDeedCrossReferenceDataDaily]('A') a
 				
 
 			---------------------------------------------------------------------------
@@ -82,17 +80,17 @@ BEGIN
 			-- Insert audit records for rows updated
 			INSERT INTO dbo.RowTransactionCommitted
 			--DECLARE @DateTimeStamp AS DATETIME = CONVERT(DATETIME,'2016-04-18 00:00:00',120)
-			--DECLARE @tableName AS VARCHAR(150) = 'acris.MortgageDeedMaster'
+			--DECLARE @tableName AS VARCHAR(150) = 'acris.MortgageDeedCrossReference'
 			--DECLARE @IdentifyingColumnName AS VARCHAR(255) = 'UniqueKey'
 			SELECT @tableName, @IdentifyingColumnName
 			       ,a.UniqueKey
 				   ,0, 0, 1, @DateTimeStamp, GETDATE() 
-			FROM[stage].[tfnMortgageDeedMasterDataDaily]('U') a
+			FROM[stage].[tfnMortgageDeedCrossReferenceDataDaily]('U') a
 				
 
 			--FOR DEBUGGING DO NOT DELETE
 			--DECLARE @DateTimeStamp AS DATETIME = CONVERT(DATETIME,'2016-04-18 00:00:00',120)
-			--DECLARE @tableName AS VARCHAR(150) = 'acris.MortgageDeedMaster'
+			--DECLARE @tableName AS VARCHAR(150) = 'acris.MortgageDeedCrossReference'
 			--DECLARE @IdentifyingColumnName AS VARCHAR(255) = 'UniqueKey'
 
 			-- Insert Columns changed in each row with old and new value
@@ -100,7 +98,7 @@ BEGIN
 			DECLARE @cmdStr AS NVARCHAR(MAX)=N''
 			
 			-- Create the Audit statement
-			EXEC Utilities.util.[CreateValuesFragementForAudit] 'AreaAbstractNew', 'MortgageDeedMaster', 'UniqueKey, DateLastUpdated', @outStr OUTPUT, @cmdStr OUTPUT, 'acris'
+			EXEC Utilities.util.[CreateValuesFragementForAudit] 'AreaAbstractNew', 'MortgageDeedCrossReference', 'UniqueKey, DateLastUpdated', @outStr OUTPUT, @cmdStr OUTPUT, 'acris'
 			
 			SET @outStr = N' INSERT INTO dbo.ColumnTransactionCommitted' +
 						  N' SELECT '+Utilities.util.fninQuotes(@tableName)+N' AS TableName'
@@ -111,8 +109,8 @@ BEGIN
 						+ N',C.VAL2 AS OldValue'
 						+ N',@inDateTimeStamp AS TransactionDateTime'
 						+ N',GETDATE() AS DateTimeProcessed' 
-						+ N' FROM  stage.tfnMortgageDeedMasterDataDaily(''U'') R1'
-						+ N' INNER JOIN acris.MortgageDeedMaster R2 ON R1.UniqueKey=R2.UniqueKey'
+						+ N' FROM  stage.tfnMortgageDeedCrossReferenceDataDaily(''U'') R1'
+						+ N' INNER JOIN acris.MortgageDeedCrossReference R2 ON R1.UniqueKey=R2.UniqueKey'
 						+ N' CROSS APPLY	( '
 						+ @outStr + N') '
 						+ N' C (COL, VAL1, VAL2)'
@@ -127,7 +125,7 @@ BEGIN
 			
 			--FOR DEBUGGING DO NOT DELETE
 			--DECLARE @DateTimeStamp AS DATETIME = CONVERT(DATETIME,'2016-04-18 00:00:00',120)
-			--DECLARE @tableName AS VARCHAR(150) = 'acris.MortgageDeedMaster'
+			--DECLARE @tableName AS VARCHAR(150) = 'acris.MortgageDeedCrossReference'
 			--DECLARE @IdentifyingColumnName AS VARCHAR(255) = 'UniqueKey'
 			--DECLARE @outStr AS NVARCHAR(MAX)=N''
 			--DECLARE @cmdStr AS NVARCHAR(MAX)=N''
@@ -135,11 +133,11 @@ BEGIN
 			-- Create the Update statement
 			SET @outStr=''
 			SET @cmdStr=''
-			EXEC Utilities.util.[CreateSetFragementForUpdate] 'AreaAbstractNew', 'MortgageDeedMaster', 'UniqueKey', @outStr OUTPUT, @cmdStr OUTPUT, 'acris'
+			EXEC Utilities.util.[CreateSetFragementForUpdate] 'AreaAbstractNew', 'MortgageDeedCrossReference', 'UniqueKey', @outStr OUTPUT, @cmdStr OUTPUT, 'acris'
 
 			SET @outStr = N' UPDATE a '
 						+ @outStr +
-						+ N' FROM acris.MortgageDeedMaster a, stage.tfnMortgageDeedMasterDataDaily(''U'') b'
+						+ N' FROM acris.MortgageDeedCrossReference a, stage.tfnMortgageDeedCrossReferenceDataDaily(''U'') b'
 						+ N' WHERE a.UniqueKey=b.UniqueKey'
 						
 			--FOR DEBUGGING DO NOT DELETE
