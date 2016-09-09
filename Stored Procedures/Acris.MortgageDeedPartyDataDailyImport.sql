@@ -7,19 +7,19 @@ GO
 -- =============================================
 -- Author:					Raj Sethi
 
--- Creation date:			09/06/2016
+-- Creation date:			09/09/2016
 
--- Mofifications dates:		09/09/2016
+-- Mofifications dates:		
 
--- Description:				This stored procedure inserts and updates new records in acris.MortgageDeedLot table based on acris.tfnMortgageDeedLotDataDaily
+-- Description:				This stored procedure inserts and updates new records in acris.MortgageDeedParty table based on acris.tfnMortgageDeedPartyDataDaily
 --							function. It also inserts audit records for all data inserted and updated.
  
 
--- Input tables:			acris.MortgageDeedLot
---							acris.tfnMortgageDeedLotDataDaily
+-- Input tables:			acris.MortgageDeedParty
+--							acris.tfnMortgageDeedPartyDataDaily
 --							
 
--- Tables modified:			acris.MortgageDeedLot
+-- Tables modified:			acris.MortgageDeedParty
 
 -- Arguments:				@DateTimeStampStr - DateTimeStamp of when the actual daily import file was created
 
@@ -28,7 +28,7 @@ GO
 -- Where used:				In [acris].[MortgageDeedDataDailyImport] stored procedure
 
 -- =============================================
-CREATE PROCEDURE [Acris].[MortgageDeedLotDataDailyImport](@DateTimeStampStr AS VARCHAR(20), @ErrorMessage AS VARCHAR(MAX) OUTPUT)
+CREATE PROCEDURE [Acris].[MortgageDeedPartyDataDailyImport](@DateTimeStampStr AS VARCHAR(20), @ErrorMessage AS VARCHAR(MAX) OUTPUT)
 AS
 BEGIN
 	
@@ -36,8 +36,8 @@ BEGIN
 	
 	SET NOCOUNT ON;
 	DECLARE @DateTimeStamp AS DATETIME
-	DECLARE @tableName AS VARCHAR(150) = 'acris.MortgageDeedLot'
-	DECLARE @IdentifyingColumnName AS VARCHAR(255) = 'BBL + UniqueKey + Easement'
+	DECLARE @tableName AS VARCHAR(150) = 'acris.MortgageDeedParty'
+	DECLARE @IdentifyingColumnName AS VARCHAR(255) = 'UniqueKey + PartType + Name'
 	
 	
 	BEGIN TRY
@@ -57,21 +57,21 @@ BEGIN
 			-- Insert audit records for new rows to be inserted
 			INSERT INTO dbo.RowTransactionCommitted
 			--DECLARE @DateTimeStamp AS DATETIME = CONVERT(DATETIME,'2016-04-18 00:00:00',120)
-			--DECLARE @tableName AS VARCHAR(150) = 'acris.MortgageDeedLot'
-			--DECLARE @IdentifyingColumnName AS VARCHAR(255) = 'BBL + UniqueKey + Easement'
+			--DECLARE @tableName AS VARCHAR(150) = 'acris.MortgageDeedParty'
+			--DECLARE @IdentifyingColumnName AS VARCHAR(255) = 'UniqueKey + PartType + Name'
 			SELECT	@tableName
 					,@IdentifyingColumnName
-					,a.BBL + ',' + a.UniqueKey + ',' + a.Easement 
+					,a.UniqueKey + ',' + a.PartyType + ',' + a.[Name] 
 					, 1, 0, 0
 					,@DateTimeStamp
 					,GETDATE() 
-			FROM  [stage].[tfnMortgageDeedLotDataDaily]('A') a
+			FROM  [stage].[tfnMortgageDeedPartyDataDaily]('A') a
 		
 
 			if @Mode<>'DEBUG'
 			--Actually Insert Records
-				INSERT INTO acris.MortgageDeedLot
-				SELECT a.* FROM [stage].[tfnMortgageDeedLotDataDaily]('A') a
+				INSERT INTO acris.MortgageDeedParty
+				SELECT a.* FROM [stage].[tfnMortgageDeedPartyDataDaily]('A') a
 				
 
 			---------------------------------------------------------------------------
@@ -81,18 +81,18 @@ BEGIN
 			-- Insert audit records for rows updated
 			INSERT INTO dbo.RowTransactionCommitted
 			--DECLARE @DateTimeStamp AS DATETIME = CONVERT(DATETIME,'2016-04-18 00:00:00',120)
-			--DECLARE @tableName AS VARCHAR(150) = 'acris.MortgageDeedLot'
-			--DECLARE @IdentifyingColumnName AS VARCHAR(255) ='BBL + UniqueKey + Easement'
+			--DECLARE @tableName AS VARCHAR(150) = 'acris.MortgageDeedParty'
+			--DECLARE @IdentifyingColumnName AS VARCHAR(255) ='UniqueKey + PartType + Name'
 			SELECT @tableName, @IdentifyingColumnName
-			       ,a.BBL + ',' + a.UniqueKey + ',' + a.Easement
+			       ,a.UniqueKey + ',' + a.PartyType + ',' + a.[Name]
 				   ,0, 0, 1, @DateTimeStamp, GETDATE() 
-			FROM[stage].[tfnMortgageDeedLotDataDaily]('U') a
+			FROM[stage].[tfnMortgageDeedPartyDataDaily]('U') a
 				
 
 			--FOR DEBUGGING DO NOT DELETE
 			--DECLARE @DateTimeStamp AS DATETIME = CONVERT(DATETIME,'2016-04-18 00:00:00',120)
-			--DECLARE @tableName AS VARCHAR(150) = 'acris.MortgageDeedLot'
-			--DECLARE @IdentifyingColumnName AS VARCHAR(255) = 'BBL + UniqueKey + Easement'
+			--DECLARE @tableName AS VARCHAR(150) = 'acris.MortgageDeedParty'
+			--DECLARE @IdentifyingColumnName AS VARCHAR(255) = 'UniqueKey + PartType + Name'
 
 			-- Insert Columns changed in each row with old and new value
 			DECLARE @outStr AS NVARCHAR(MAX)=N''
@@ -100,24 +100,24 @@ BEGIN
 			
 						
 			-- Create the Audit statement
-			EXEC Utilities.util.[CreateValuesFragementForAudit] 'AreaAbstractNew', 'MortgageDeedLot', 'UniqueKey, BBL, Easement, DateLastUpdated', @outStr OUTPUT, @cmdStr OUTPUT, 'acris'
+			EXEC Utilities.util.[CreateValuesFragementForAudit] 'AreaAbstractNew', 'MortgageDeedParty', 'UniqueKey, PartyType, Name, DateLastUpdated', @outStr OUTPUT, @cmdStr OUTPUT, 'acris'
 			
 			SET @outStr = N' INSERT INTO dbo.ColumnTransactionCommitted' +
 						  N' SELECT '+Utilities.util.fninQuotes(@tableName)+N' AS TableName'
 						+ N','+ Utilities.util.fninQuotes(@IdentifyingColumnName)+N' AS IdentifyingColumnName'
-						+ N', R1.BBL +'',''+ R1.UniqueKey +'',''+R1.Easment AS IdentifyingValue'
+						+ N', R1.UniqueKey +'',''+ R1.PartyType +'',''+R1.Name AS IdentifyingValue'
 						+ N',C.COL AS [ColumnName]'
 						+ N',C.VAL1 AS NewValue'
 						+ N',C.VAL2 AS OldValue'
 						+ N',@inDateTimeStamp AS TransactionDateTime'
 						+ N',GETDATE() AS DateTimeProcessed' 
-						+ N' FROM  stage.tfnMortgageDeedLotDataDaily(''U'') R1'
-						+ N' INNER JOIN acris.MortgageDeedLot R2 ON R1.BBL=R2.BBL AND R1.UniqueKey=R2.UniqueKey AND R1.Easement=R2.Easement'
+						+ N' FROM  stage.tfnMortgageDeedPartyDataDaily(''U'') R1'
+						+ N' INNER JOIN acris.MortgageDeedParty R2 ON R1.PartyType=R2.PartyType AND R1.UniqueKey=R2.UniqueKey AND R1.[Name]=R2.[Name]'
 						+ N' CROSS APPLY	( '
 						+ @outStr + N') '
 						+ N' C (COL, VAL1, VAL2)'
 						+ N' WHERE (C.Val1<>C.Val2) OR (C.Val1 IS NOT NULL AND C.Val2 IS NULL) OR (C.Val1 IS NULL AND C.Val2 IS NOT NULL)'
-						+ N' ORDER BY R1.BBL, R1.UniqueKey, R1.Easement'
+						+ N' ORDER BY R1.UniqueKey, R1.PartyType, R1.[Name]'
 			
 			--FOR DEBUGGING DO NOT DELETE
 			--SELECT  @outStr OUTPUT, @cmdStr OUTPUT
@@ -127,20 +127,20 @@ BEGIN
 			
 			--FOR DEBUGGING DO NOT DELETE
 			--DECLARE @DateTimeStamp AS DATETIME = CONVERT(DATETIME,'2016-04-18 00:00:00',120)
-			--DECLARE @tableName AS VARCHAR(150) = 'acris.MortgageDeedLot'
-			--DECLARE @IdentifyingColumnName AS VARCHAR(255) = 'BBL + UniqueKey + Easement'
+			--DECLARE @tableName AS VARCHAR(150) = 'acris.MortgageDeedParty'
+			--DECLARE @IdentifyingColumnName AS VARCHAR(255) = 'UniqueKey + PartType + Name'
 			--DECLARE @outStr AS NVARCHAR(MAX)=N''
 			--DECLARE @cmdStr AS NVARCHAR(MAX)=N''
 			
 			-- Create the Update statement
 			SET @outStr=''
 			SET @cmdStr=''
-			EXEC Utilities.util.[CreateSetFragementForUpdate] 'AreaAbstractNew', 'MortgageDeedLot', 'UniqueKey, BBL, Easement', @outStr OUTPUT, @cmdStr OUTPUT, 'acris'
+			EXEC Utilities.util.[CreateSetFragementForUpdate] 'AreaAbstractNew', 'MortgageDeedParty', 'UniqueKey, PartType, Name', @outStr OUTPUT, @cmdStr OUTPUT, 'acris'
 
 			SET @outStr = N' UPDATE a '
 						+ @outStr +
-						+ N' FROM acris.MortgageDeedLot a, stage.tfnMortgageDeedLotDataDaily(''U'') b'
-						+ N' WHERE a.BBL=b.BBL AND a.UniqueKey=b.UniqueKey AND a.Easement=b.Easement'
+						+ N' FROM acris.MortgageDeedParty a, stage.tfnMortgageDeedPartyDataDaily(''U'') b'
+						+ N' WHERE a.PartyType=b.PartyType AND a.UniqueKey=b.UniqueKey AND a.[Name]=b.[Name]'
 						
 			--FOR DEBUGGING DO NOT DELETE
 			--SELECT  @outStr OUTPUT, @cmdStr OUTPUT

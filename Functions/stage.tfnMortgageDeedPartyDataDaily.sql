@@ -41,6 +41,18 @@ AS RETURN
 	FROM	[stage].[vwMortgageDeedPartyNoDups] a
 	LEFT OUTER JOIN [Acris].[MortgageDeedParty] b ON a.UniqueKey = b.UniqueKey
 													 AND a.PartyType = b.PartyType
+													 AND a.[Name] = b.[Name]
+	WHERE	(b.UniqueKey IS NULL
+			 AND @operationFlag = 'A'
+			)
+			OR (b.UniqueKey IS NOT NULL
+				AND a.Name = b.Name
+				AND @operationFlag = 'U'
+		   )
+		
+/*
+	LEFT OUTER JOIN [Acris].[MortgageDeedParty] b ON a.UniqueKey = b.UniqueKey
+													 AND a.PartyType = b.PartyType
 													 AND a.[CompressedName] = b.[CompressedName]
 	WHERE	(b.UniqueKey IS NULL
 			 AND @operationFlag = 'A'
@@ -68,9 +80,10 @@ AS RETURN
 				AND dbo.fnCompareString(a.Zip,b.Zip)=0
 				AND @operationFlag = 'U'
 			   )
+*/
 )
 
--- SELECT * FROM [stage].[tfnMortgageDeedPartyDataDaily]('U')
+-- SELECT * FROM [stage].[tfnMortgageDeedPartyDataDaily]('A')
 -- SELECT  
 
 

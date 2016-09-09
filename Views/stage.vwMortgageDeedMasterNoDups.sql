@@ -2,9 +2,27 @@ SET QUOTED_IDENTIFIER ON
 GO
 SET ANSI_NULLS ON
 GO
+-- =============================================
+-- Author:			Raj Sethi
 
+-- Date Created:	09/06/2016
+	
+-- Dates Modified:	09/09/2016
 
-/****** Script for SelectTopNRows command from SSMS  ******/
+-- Description:		This view removes duplicate records in an stagging table. 
+--					The latest version of the record is considered for the import based on the Identity column RecordId.			
+
+-- Input tables:	stage.[MortgageDeedMaster]
+
+-- Tables modified: None
+
+-- Arguments:		
+--					
+-- Outputs:			Returns deupped set of records
+
+-- Where used:		acris.tfnMortgageDeedMasterDataDailyImport Table Valued Function
+-- =============================================
+
 CREATE VIEW [stage].[vwMortgageDeedMasterNoDups]
 AS 
 SELECT a.RecordId
@@ -26,4 +44,5 @@ INNER JOIN (SELECT MAX(RecordId) AS RecordId
             FROM [stage].[MortgageDeedMaster]
 			GROUP BY UniqueKey
 		    ) b ON a.RecordId=b.RecordId
+
 GO
