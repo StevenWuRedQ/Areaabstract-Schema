@@ -9,7 +9,7 @@ GO
 
 -- Creation date:			08/31/2016
 
--- Mofifications dates:		
+-- Mofifications dates:		09/12/2016
 
 -- Description:				The procedure creates a log entry in [dbo].[DailyImportLog] indicating start of an import processess and then truncates the daily staging file
  
@@ -65,6 +65,14 @@ BEGIN
 			TRUNCATE TABLE [stage].[MortgageDeedParty]
 			TRUNCATE TABLE [stage].[MortgageDeedMaster]
 			TRUNCATE TABLE [stage].[MortgageDeedRemark]
+		END
+		ELSE IF @TableMnemonic='UCC'
+		BEGIN
+			TRUNCATE TABLE [stage].[UCCCrossReference]
+			TRUNCATE TABLE [stage].[UCCLot]
+			TRUNCATE TABLE [stage].[UCCParty]
+			TRUNCATE TABLE [stage].[UCCMaster]
+			TRUNCATE TABLE [stage].[UCCRemark]
 		END
 		ELSE
 			RETURN 2

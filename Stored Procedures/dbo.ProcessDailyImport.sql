@@ -9,7 +9,7 @@ GO
 
 -- Creation date:			08/31/2016
 
--- Mofifications dates:		
+-- Mofifications dates:		09/09/2016
 
 -- Description:				This stored procedure is used In SSIS packages in AreaAbstractACRISImport project. 
 --							The procedure calls the appropriate stored procedure depending on the tablemnemonic to process the daily import
@@ -37,7 +37,80 @@ BEGIN
 			
 	IF @tableMnemonic='MORTDEED'
 	BEGIN
-		EXEC @errorCode=[acris].[MortgageDeedDataDailyImport] @DateTimeStampStr, @errorMessage OUTPUT
+		BEGIN TRANSACTION
+		EXEC @errorCode=[Acris].[MortgageDeedMasterDataDailyImport] @DateTimeStampStr, @errorMessage OUTPUT
+		IF @errorCode!=0
+		BEGIN
+			ROLLBACK TRANSACTION
+			RETURN @errorCode 
+		END
+
+		EXEC @errorCode=[Acris].[MortgageDeedPartyDataDailyImport] @DateTimeStampStr, @errorMessage OUTPUT
+		IF @errorCode!=0
+		BEGIN
+			ROLLBACK TRANSACTION
+			RETURN @errorCode 
+		END
+
+		EXEC @errorCode=[Acris].[MortgageDeedLotDataDailyImport] @DateTimeStampStr, @errorMessage OUTPUT
+		IF @errorCode!=0
+		BEGIN
+			ROLLBACK TRANSACTION
+			RETURN @errorCode 
+		END
+
+		EXEC @errorCode=[Acris].[MortgageDeedRemarkDataDailyImport] @DateTimeStampStr, @errorMessage OUTPUT
+		IF @errorCode!=0
+		BEGIN
+			ROLLBACK TRANSACTION
+			RETURN @errorCode 
+		END
+		EXEC @errorCode=[Acris].[MortgageDeedCrossReferenceDataDailyImport] @DateTimeStampStr, @errorMessage OUTPUT
+		IF @errorCode!=0
+		BEGIN
+			ROLLBACK TRANSACTION
+			RETURN @errorCode 
+		END
+		COMMIT TRANSACTION
+	END
+	ELSE IF @tableMnemonic='UCC'
+	BEGIN
+		BEGIN TRANSACTION
+/*		EXEC @errorCode=[Acris].[UCCMasterDataDailyImport] @DateTimeStampStr, @errorMessage OUTPUT
+		IF @errorCode!=0
+		BEGIN
+			ROLLBACK TRANSACTION
+			RETURN @errorCode 
+		END
+
+		EXEC @errorCode=[Acris].[UCCPartyDataDailyImport] @DateTimeStampStr, @errorMessage OUTPUT
+		IF @errorCode!=0
+		BEGIN
+			ROLLBACK TRANSACTION
+			RETURN @errorCode 
+		END
+
+		EXEC @errorCode=[Acris].[UCCLotDataDailyImport] @DateTimeStampStr, @errorMessage OUTPUT
+		IF @errorCode!=0
+		BEGIN
+			ROLLBACK TRANSACTION
+			RETURN @errorCode 
+		END
+
+		EXEC @errorCode=[Acris].[UCCRemarkDataDailyImport] @DateTimeStampStr, @errorMessage OUTPUT
+		IF @errorCode!=0
+		BEGIN
+			ROLLBACK TRANSACTION
+			RETURN @errorCode 
+		END
+		EXEC @errorCode=[Acris].[UCCCrossReferenceDataDailyImport] @DateTimeStampStr, @errorMessage OUTPUT
+		IF @errorCode!=0
+		BEGIN
+			ROLLBACK TRANSACTION
+			RETURN @errorCode 
+		END
+		*/
+		COMMIT TRANSACTION
 	END
 	ELSE
 		RETURN 3
