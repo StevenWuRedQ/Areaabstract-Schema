@@ -7,3 +7,5 @@ CREATE TABLE [Acris].[UCCCrossReference]
 [DateLastUpdated] [datetime] NULL
 ) ON [PRIMARY]
 GO
+ALTER TABLE [Acris].[UCCCrossReference] ADD CONSTRAINT [PK_UCCCrossReference] PRIMARY KEY CLUSTERED  ([UniqueKey]) ON [PRIMARY]
+GO

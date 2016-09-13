@@ -55,7 +55,7 @@ BEGIN
 		  ,[State]
 		  ,[Zip]
 		  ,[DateLastUpdated]
-	FROM acris.UCCPartyBase20160909WithDupMarker
+	FROM stage.UCCPartyBase20160909WithDupMarker
 	WHERE RowNumber=1
 
 	TRUNCATE TABLE acris.UCCCrossReference

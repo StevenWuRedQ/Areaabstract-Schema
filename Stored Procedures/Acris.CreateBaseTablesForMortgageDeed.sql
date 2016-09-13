@@ -77,8 +77,9 @@ BEGIN
 	INTO	stage.MortgageDeedPartyBase20160909
 	FROM	AreaAbstract.[Acris].[ACRIS_PARTIES]; 
 
+	DROP TABLE stage.MortgageDeedPartyBase20160909WithDupMarker
 	SELECT *, ROW_NUMBER() OVER(PARTITION BY UniqueKey,PartyType,Name ORDER BY UniqueKey,PartyType,Name) AS RowNumber 
-	INTO acris.MortgageDeedPartyBase20160909WithDupMarker
+	INTO stage.MortgageDeedPartyBase20160909WithDupMarker
 	FROM stage.MortgageDeedPartyBase20160909
 
 	SELECT	UniqueKey

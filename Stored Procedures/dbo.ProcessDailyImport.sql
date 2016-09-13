@@ -76,7 +76,7 @@ BEGIN
 	ELSE IF @tableMnemonic='UCC'
 	BEGIN
 		BEGIN TRANSACTION
-/*		EXEC @errorCode=[Acris].[UCCMasterDataDailyImport] @DateTimeStampStr, @errorMessage OUTPUT
+		EXEC @errorCode=[Acris].[UCCMasterDataDailyImport] @DateTimeStampStr, @errorMessage OUTPUT
 		IF @errorCode!=0
 		BEGIN
 			ROLLBACK TRANSACTION
@@ -109,7 +109,7 @@ BEGIN
 			ROLLBACK TRANSACTION
 			RETURN @errorCode 
 		END
-		*/
+		
 		COMMIT TRANSACTION
 	END
 	ELSE

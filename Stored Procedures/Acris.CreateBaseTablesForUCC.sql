@@ -84,15 +84,10 @@ BEGIN
 	INTO	stage.UCCPartyBase20160909
 	FROM	AreaAbstract.[UCC].[UCC_PARTIES]; 
 
-	SELECT	UniqueKey
-		   ,PartyType
-		   ,Name
-	INTO	Acris.UCCPartyBase20160909Dups
-	FROM	stage.UCCPartyBase20160909
-	GROUP BY UniqueKey
-		   ,PartyType
-		   ,Name
-	HAVING	COUNT(*) > 1;
+	DROP TABLE stage.UCCPartyBase20160909WithDupMarker
+	SELECT *, ROW_NUMBER() OVER(PARTITION BY UniqueKey,PartyType,Name ORDER BY UniqueKey,PartyType,Name) AS RowNumber 
+	INTO stage.UCCPartyBase20160909WithDupMarker
+	FROM stage.UCCPartyBase20160909
 
 	SELECT	[Unique_key] AS UniqueKey
 		   ,LTRIM(RTRIM([CRFN])) AS CRFN
