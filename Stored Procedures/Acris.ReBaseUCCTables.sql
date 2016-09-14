@@ -47,7 +47,7 @@ BEGIN
 	SELECT [UniqueKey]
 		  ,[PartyType]
 		  ,[Name]
-		  ,[CompressedName]
+		  ,Utilities.[util].[fnGetAlphaNumeric]([Name]) AS [CompressedName]
 		  ,[Address1]
 		  ,[Address2]
 		  ,[Country]
