@@ -9,7 +9,7 @@ GO
 
 -- Creation date:			08/31/2016
 
--- Mofifications dates:		09/09/2016
+-- Mofifications dates:		09/09/2016, 09/14/2016
 
 -- Description:				This stored procedure is used In SSIS packages in AreaAbstractACRISImport project. 
 --							The procedure calls the appropriate stored procedure depending on the tablemnemonic to process the daily import
@@ -39,15 +39,15 @@ BEGIN
 	BEGIN
 		BEGIN TRY 
 			BEGIN TRANSACTION
-				EXEC @errorCode=[Acris].[MortgageDeedMasterDataDailyImport] @DateTimeStampStr, @errorMessage OUTPUT
+				EXEC @errorCode=[Acris].[MortgageDeedMasterDataDailyImport] @DateTimeStampStr
 		
-				EXEC @errorCode=[Acris].[MortgageDeedPartyDataDailyImport] @DateTimeStampStr, @errorMessage OUTPUT
+				EXEC @errorCode=[Acris].[MortgageDeedPartyDataDailyImport] @DateTimeStampStr
 		
-				EXEC @errorCode=[Acris].[MortgageDeedLotDataDailyImport] @DateTimeStampStr, @errorMessage OUTPUT
+				EXEC @errorCode=[Acris].[MortgageDeedLotDataDailyImport] @DateTimeStampStr
 		
-				EXEC @errorCode=[Acris].[MortgageDeedRemarkDataDailyImport] @DateTimeStampStr, @errorMessage OUTPUT
+				EXEC @errorCode=[Acris].[MortgageDeedRemarkDataDailyImport] @DateTimeStampStr
 		
-				EXEC @errorCode=[Acris].[MortgageDeedCrossReferenceDataDailyImport] @DateTimeStampStr, @errorMessage OUTPUT
+				EXEC @errorCode=[Acris].[MortgageDeedCrossReferenceDataDailyImport] @DateTimeStampStr
 		
 			COMMIT TRANSACTION
 		END TRY

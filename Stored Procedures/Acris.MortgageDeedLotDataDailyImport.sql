@@ -3,13 +3,12 @@ GO
 SET ANSI_NULLS ON
 GO
 
-
 -- =============================================
 -- Author:					Raj Sethi
 
 -- Creation date:			09/06/2016
 
--- Mofifications dates:		09/09/2016
+-- Mofifications dates:		09/09/2016, 09/14/2016
 
 -- Description:				This stored procedure inserts and updates new records in acris.MortgageDeedLot table based on acris.tfnMortgageDeedLotDataDaily
 --							function. It also inserts audit records for all data inserted and updated.
@@ -28,7 +27,7 @@ GO
 -- Where used:				In [acris].[MortgageDeedDataDailyImport] stored procedure
 
 -- =============================================
-CREATE PROCEDURE [Acris].[MortgageDeedLotDataDailyImport](@DateTimeStampStr AS VARCHAR(20), @ErrorMessage AS VARCHAR(MAX) OUTPUT)
+CREATE PROCEDURE [Acris].[MortgageDeedLotDataDailyImport](@DateTimeStampStr AS VARCHAR(20))
 AS
 BEGIN
 	
@@ -44,36 +43,19 @@ BEGIN
 		SET @DateTimeStamp = CONVERT(DATETIME, @DateTimeStampStr,120)
 	END TRY
 	BEGIN CATCH
-		RETURN 3
+		THROW 50004,'Invalid Datetime stamp value',1;
 	END CATCH
 
+	DECLARE @InTransaction AS BIT=0
+	IF (@@TranCount>0)
+		SET @InTransaction=1
+
 	BEGIN TRY
-		BEGIN TRANSACTION
+		IF (@InTransaction=1)
+			SAVE TRANSACTION LTMDLotDataDailyImport
+		ELSE
+			BEGIN TRANSACTION 
 			
-			---------------------------------------------------------------------------
-			-- INSERT RECORDS
-			---------------------------------------------------------------------------
-			
-			-- Insert audit records for new rows to be inserted
-			INSERT INTO dbo.RowTransactionCommitted
-			--DECLARE @DateTimeStamp AS DATETIME = CONVERT(DATETIME,'2016-04-18 00:00:00',120)
-			--DECLARE @tableName AS VARCHAR(150) = 'acris.MortgageDeedLot'
-			--DECLARE @IdentifyingColumnName AS VARCHAR(255) = 'BBL + UniqueKey + Easement'
-			SELECT	@tableName
-					,@IdentifyingColumnName
-					,a.BBL + ',' + a.UniqueKey + ',' + a.Easement 
-					, 1, 0, 0
-					,@DateTimeStamp
-					,GETDATE() 
-			FROM  [stage].[tfnMortgageDeedLotDataDaily]('A') a
-		
-
-			if @Mode<>'DEBUG'
-			--Actually Insert Records
-				INSERT INTO acris.MortgageDeedLot
-				SELECT a.* FROM [stage].[tfnMortgageDeedLotDataDaily]('A') a
-				
-
 			---------------------------------------------------------------------------
 			-- UPDATE RECORDS
 			---------------------------------------------------------------------------
@@ -105,7 +87,7 @@ BEGIN
 			SET @outStr = N' INSERT INTO dbo.ColumnTransactionCommitted' +
 						  N' SELECT '+Utilities.util.fninQuotes(@tableName)+N' AS TableName'
 						+ N','+ Utilities.util.fninQuotes(@IdentifyingColumnName)+N' AS IdentifyingColumnName'
-						+ N', R1.BBL +'',''+ R1.UniqueKey +'',''+R1.Easment AS IdentifyingValue'
+						+ N', R1.BBL +'',''+ R1.UniqueKey +'',''+R1.Easement AS IdentifyingValue'
 						+ N',C.COL AS [ColumnName]'
 						+ N',C.VAL1 AS NewValue'
 						+ N',C.VAL2 AS OldValue'
@@ -149,13 +131,40 @@ BEGIN
 			BEGIN
 				EXEC sp_executesql @outStr
 			END
-		COMMIT TRANSACTION
+
+			---------------------------------------------------------------------------
+			-- INSERT RECORDS
+			---------------------------------------------------------------------------
+			
+			-- Insert audit records for new rows to be inserted
+			INSERT INTO dbo.RowTransactionCommitted
+			--DECLARE @DateTimeStamp AS DATETIME = CONVERT(DATETIME,'2016-04-18 00:00:00',120)
+			--DECLARE @tableName AS VARCHAR(150) = 'acris.MortgageDeedLot'
+			--DECLARE @IdentifyingColumnName AS VARCHAR(255) = 'BBL + UniqueKey + Easement'
+			SELECT	@tableName
+					,@IdentifyingColumnName
+					,a.BBL + ',' + a.UniqueKey + ',' + a.Easement 
+					, 1, 0, 0
+					,@DateTimeStamp
+					,GETDATE() 
+			FROM  [stage].[tfnMortgageDeedLotDataDaily]('A') a
+		
+
+			if @Mode<>'DEBUG'
+			--Actually Insert Records
+				INSERT INTO acris.MortgageDeedLot
+				SELECT a.* FROM [stage].[tfnMortgageDeedLotDataDaily]('A') a
+				
+		IF (@InTransaction=0)
+			COMMIT TRANSACTION
 		RETURN 0
 	END TRY
 	BEGIN CATCH
-		ROLLBACK TRANSACTION
-		SET @ErrorMessage=ERROR_MESSAGE()
-		RETURN ERROR_NUMBER() 
+		IF (@InTransaction=0)
+			ROLLBACK TRANSACTION;
+		ELSE 
+			ROLLBACK TRANSACTION LTMDLotDataDailyImport;
+		THROW; 
 	END CATCH
 END;
 

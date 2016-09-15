@@ -8,7 +8,7 @@ GO
 
 -- Creation date:			09/08/2016
 
--- Mofifications dates:		
+-- Mofifications dates:		09/14/2016
 
 -- Description:				This stored procedure inserts and updates new records in acris.MortgageDeedCrossReference table based on acris.tfnMortgageDeedCrossReferenceDataDaily
 --							function. It also inserts audit records for all data inserted and updated.
@@ -27,7 +27,7 @@ GO
 -- Where used:				In [acris].[MortgageDeedDataDailyImport] stored procedure
 
 -- =============================================
-CREATE PROCEDURE [Acris].[MortgageDeedCrossReferenceDataDailyImport](@DateTimeStampStr AS VARCHAR(20), @ErrorMessage AS VARCHAR(MAX) OUTPUT)
+CREATE PROCEDURE [Acris].[MortgageDeedCrossReferenceDataDailyImport](@DateTimeStampStr AS VARCHAR(20))
 AS
 BEGIN
 	
@@ -43,36 +43,19 @@ BEGIN
 		SET @DateTimeStamp = CONVERT(DATETIME, @DateTimeStampStr,120)
 	END TRY
 	BEGIN CATCH
-		RETURN 3
+		THROW 50004,'Invalid Datetime stamp value',1;
 	END CATCH
 
+	DECLARE @InTransaction AS BIT=0
+	IF (@@TranCount>0)
+		SET @InTransaction=1
+
 	BEGIN TRY
-		BEGIN TRANSACTION
+		IF (@InTransaction=1)
+			SAVE TRANSACTION LTMDCrossRefDataDailyImport
+		ELSE
+			BEGIN TRANSACTION 
 			
-			---------------------------------------------------------------------------
-			-- INSERT RECORDS
-			---------------------------------------------------------------------------
-			
-			-- Insert audit records for new rows to be inserted
-			INSERT INTO dbo.RowTransactionCommitted
-			--DECLARE @DateTimeStamp AS DATETIME = CONVERT(DATETIME,'2016-04-18 00:00:00',120)
-			--DECLARE @tableName AS VARCHAR(150) = 'acris.MortgageDeedCrossReference'
-			--DECLARE @IdentifyingColumnName AS VARCHAR(255) = 'UniqueKey'
-			SELECT	@tableName
-					,@IdentifyingColumnName
-					,a.UniqueKey
-					, 1, 0, 0
-					,@DateTimeStamp
-					,GETDATE() 
-			FROM  [stage].[tfnMortgageDeedCrossReferenceDataDaily]('A') a
-		
-
-			if @Mode<>'DEBUG'
-			--Actually Insert Records
-				INSERT INTO acris.MortgageDeedCrossReference
-				SELECT a.* FROM [stage].[tfnMortgageDeedCrossReferenceDataDaily]('A') a
-				
-
 			---------------------------------------------------------------------------
 			-- UPDATE RECORDS
 			---------------------------------------------------------------------------
@@ -148,13 +131,40 @@ BEGIN
 				--Execute the Update statement to update actual DocumentExtract records
 				EXEC sp_executesql @outStr
 			END
-		COMMIT TRANSACTION
+
+			---------------------------------------------------------------------------
+			-- INSERT RECORDS
+			---------------------------------------------------------------------------
+			
+			-- Insert audit records for new rows to be inserted
+			INSERT INTO dbo.RowTransactionCommitted
+			--DECLARE @DateTimeStamp AS DATETIME = CONVERT(DATETIME,'2016-04-18 00:00:00',120)
+			--DECLARE @tableName AS VARCHAR(150) = 'acris.MortgageDeedCrossReference'
+			--DECLARE @IdentifyingColumnName AS VARCHAR(255) = 'UniqueKey'
+			SELECT	@tableName
+					,@IdentifyingColumnName
+					,a.UniqueKey
+					, 1, 0, 0
+					,@DateTimeStamp
+					,GETDATE() 
+			FROM  [stage].[tfnMortgageDeedCrossReferenceDataDaily]('A') a
+		
+
+			if @Mode<>'DEBUG'
+			--Actually Insert Records
+				INSERT INTO acris.MortgageDeedCrossReference
+				SELECT a.* FROM [stage].[tfnMortgageDeedCrossReferenceDataDaily]('A') a
+				
+		IF (@InTransaction=0)
+			COMMIT TRANSACTION
 		RETURN 0
 	END TRY
 	BEGIN CATCH
-		ROLLBACK TRANSACTION
-		SET @ErrorMessage=ERROR_MESSAGE()
-		RETURN ERROR_NUMBER() 
+		IF (@InTransaction=0)
+			ROLLBACK TRANSACTION;
+		ELSE
+			ROLLBACK TRANSACTION LTMDCrossRefDataDailyImport;
+		THROW;
 	END CATCH
 END;
 
