@@ -13,7 +13,7 @@ CREATE TABLE [Acris].[UCCMaster]
 [RPTTLNumber] [varchar] (12) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
 [DateModified] [date] NULL,
 [ReelYear] [varchar] (4) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
-[RealNumber] [varchar] (5) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
+[ReelNumber] [varchar] (5) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
 [ReelPage] [varchar] (5) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
 [FileNumber] [varchar] (12) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
 [DateLastUpdated] [datetime] NULL

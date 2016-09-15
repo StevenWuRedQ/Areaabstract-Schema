@@ -8,7 +8,7 @@ GO
 
 -- Date Created:	09/13/2016
 	
--- Dates Modified:	
+-- Dates Modified:	09/14/2016
 
 -- Description:		This function returns new records to be insert and records to be updates from stage.UCCLot
 --					
@@ -36,7 +36,7 @@ AS RETURN
 		   ,a.[PartialLot]
 		   ,a.[AirRights]
 		   ,a.[SubterraneanRights]
-		   ,a.[PropertyTypeCode]
+		   ,a.[PropertyType] AS PropertyTypeCode
 		   ,a.[StreetNumber]
 		   ,a.[StreetName]
 		   ,a.[UnitNumber]

@@ -32,90 +32,62 @@ BEGIN
 	SET NOCOUNT ON;
 	DECLARE @errorCode AS INTEGER
 	DECLARE @errorMessage AS VARCHAR(MAX)
-		
+	
 	SET @tableMnemonic=LTRIM(RTRIM(@tableMnemonic))
 			
 	IF @tableMnemonic='MORTDEED'
 	BEGIN
-		BEGIN TRANSACTION
-		EXEC @errorCode=[Acris].[MortgageDeedMasterDataDailyImport] @DateTimeStampStr, @errorMessage OUTPUT
-		IF @errorCode!=0
-		BEGIN
-			ROLLBACK TRANSACTION
-			RETURN @errorCode 
-		END
-
-		EXEC @errorCode=[Acris].[MortgageDeedPartyDataDailyImport] @DateTimeStampStr, @errorMessage OUTPUT
-		IF @errorCode!=0
-		BEGIN
-			ROLLBACK TRANSACTION
-			RETURN @errorCode 
-		END
-
-		EXEC @errorCode=[Acris].[MortgageDeedLotDataDailyImport] @DateTimeStampStr, @errorMessage OUTPUT
-		IF @errorCode!=0
-		BEGIN
-			ROLLBACK TRANSACTION
-			RETURN @errorCode 
-		END
-
-		EXEC @errorCode=[Acris].[MortgageDeedRemarkDataDailyImport] @DateTimeStampStr, @errorMessage OUTPUT
-		IF @errorCode!=0
-		BEGIN
-			ROLLBACK TRANSACTION
-			RETURN @errorCode 
-		END
-		EXEC @errorCode=[Acris].[MortgageDeedCrossReferenceDataDailyImport] @DateTimeStampStr, @errorMessage OUTPUT
-		IF @errorCode!=0
-		BEGIN
-			ROLLBACK TRANSACTION
-			RETURN @errorCode 
-		END
-		COMMIT TRANSACTION
+		BEGIN TRY 
+			BEGIN TRANSACTION
+				EXEC @errorCode=[Acris].[MortgageDeedMasterDataDailyImport] @DateTimeStampStr, @errorMessage OUTPUT
+		
+				EXEC @errorCode=[Acris].[MortgageDeedPartyDataDailyImport] @DateTimeStampStr, @errorMessage OUTPUT
+		
+				EXEC @errorCode=[Acris].[MortgageDeedLotDataDailyImport] @DateTimeStampStr, @errorMessage OUTPUT
+		
+				EXEC @errorCode=[Acris].[MortgageDeedRemarkDataDailyImport] @DateTimeStampStr, @errorMessage OUTPUT
+		
+				EXEC @errorCode=[Acris].[MortgageDeedCrossReferenceDataDailyImport] @DateTimeStampStr, @errorMessage OUTPUT
+		
+			COMMIT TRANSACTION
+		END TRY
+		BEGIN CATCH
+			ROLLBACK TRANSACTION;
+			THROW;
+		END CATCH
 	END
 	ELSE IF @tableMnemonic='UCC'
 	BEGIN
-		BEGIN TRANSACTION
-		EXEC @errorCode=[Acris].[UCCMasterDataDailyImport] @DateTimeStampStr, @errorMessage OUTPUT
-		IF @errorCode!=0
-		BEGIN
-			ROLLBACK TRANSACTION
-			RETURN @errorCode 
-		END
+		BEGIN TRY
+			BEGIN TRANSACTION
 
-		EXEC @errorCode=[Acris].[UCCPartyDataDailyImport] @DateTimeStampStr, @errorMessage OUTPUT
-		IF @errorCode!=0
-		BEGIN
-			ROLLBACK TRANSACTION
-			RETURN @errorCode 
-		END
-
-		EXEC @errorCode=[Acris].[UCCLotDataDailyImport] @DateTimeStampStr, @errorMessage OUTPUT
-		IF @errorCode!=0
-		BEGIN
-			ROLLBACK TRANSACTION
-			RETURN @errorCode 
-		END
-
-		EXEC @errorCode=[Acris].[UCCRemarkDataDailyImport] @DateTimeStampStr, @errorMessage OUTPUT
-		IF @errorCode!=0
-		BEGIN
-			ROLLBACK TRANSACTION
-			RETURN @errorCode 
-		END
-		EXEC @errorCode=[Acris].[UCCCrossReferenceDataDailyImport] @DateTimeStampStr, @errorMessage OUTPUT
-		IF @errorCode!=0
-		BEGIN
-			ROLLBACK TRANSACTION
-			RETURN @errorCode 
-		END
+				EXEC @errorCode=[Acris].[UCCMasterDataDailyImport] @DateTimeStampStr;
 		
-		COMMIT TRANSACTION
+				EXEC @errorCode=[Acris].[UCCPartyDataDailyImport] @DateTimeStampStr;
+			
+				EXEC @errorCode=[Acris].[UCCLotDataDailyImport] @DateTimeStampStr;
+			
+				EXEC @errorCode=[Acris].[UCCRemarkDataDailyImport] @DateTimeStampStr;
+			
+				EXEC @errorCode=[Acris].[UCCCrossReferenceDataDailyImport] @DateTimeStampStr;
+			
+			COMMIT TRANSACTION
+		END TRY
+		BEGIN CATCH
+			ROLLBACK TRANSACTION;
+			THROW;
+		END CATCH
 	END
 	ELSE
-		RETURN 3
+		THROW 50003,'Invalid TableMnemonic', 1
 
 	RETURN @errorCode
 END
 
+/*
+DECLARE @errorCode AS INTEGER=0
+EXEC @errorCode=[dbo].[ProcessDailyImport] '2015-08-31 00:00:00', 'UCC'
+--EXEC @errorCode=[Acris].[UCCMasterDataDailyImport] '2015-08-31 00:00:00';
+SELECT  @errorCode
+*/
 GO

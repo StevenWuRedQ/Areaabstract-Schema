@@ -3,13 +3,12 @@ GO
 SET ANSI_NULLS ON
 GO
 
-
 -- =============================================
 -- Author:					Raj Sethi
 
 -- Creation date:			09/13/2016
 
--- Mofifications dates:		
+-- Mofifications dates:		09/14/2016
 
 -- Description:				This stored procedure inserts and updates new records in acris.UCCLot table based on acris.tfnUCCLotDataDaily
 --							function. It also inserts audit records for all data inserted and updated.
@@ -28,7 +27,7 @@ GO
 -- Where used:				In [acris].[UCCDataDailyImport] stored procedure
 
 -- =============================================
-CREATE PROCEDURE [Acris].[UCCLotDataDailyImport](@DateTimeStampStr AS VARCHAR(20), @ErrorMessage AS VARCHAR(MAX) OUTPUT)
+CREATE PROCEDURE [Acris].[UCCLotDataDailyImport](@DateTimeStampStr AS VARCHAR(20))
 AS
 BEGIN
 	
@@ -44,36 +43,19 @@ BEGIN
 		SET @DateTimeStamp = CONVERT(DATETIME, @DateTimeStampStr,120)
 	END TRY
 	BEGIN CATCH
-		RETURN 3
+		THROW 50004,'Invalid Datetime stamp value',1;
 	END CATCH
 
+	DECLARE @InTransaction AS BIT=0
+	IF (@@TranCount>0)
+		SET @InTransaction=1
+
 	BEGIN TRY
-		BEGIN TRANSACTION
+		IF (@InTransaction=1)
+			SAVE TRANSACTION LTUCCLotDataDailyImport
+		ELSE
+			BEGIN TRANSACTION
 			
-			---------------------------------------------------------------------------
-			-- INSERT RECORDS
-			---------------------------------------------------------------------------
-			
-			-- Insert audit records for new rows to be inserted
-			INSERT INTO dbo.RowTransactionCommitted
-			--DECLARE @DateTimeStamp AS DATETIME = CONVERT(DATETIME,'2016-04-18 00:00:00',120)
-			--DECLARE @tableName AS VARCHAR(150) = 'acris.UCCLot'
-			--DECLARE @IdentifyingColumnName AS VARCHAR(255) = 'BBL + UniqueKey + Easement'
-			SELECT	@tableName
-					,@IdentifyingColumnName
-					,a.BBL + ',' + a.UniqueKey + ',' + a.Easement 
-					, 1, 0, 0
-					,@DateTimeStamp
-					,GETDATE() 
-			FROM  [stage].[tfnUCCLotDataDaily]('A') a
-		
-
-			if @Mode<>'DEBUG'
-			--Actually Insert Records
-				INSERT INTO acris.UCCLot
-				SELECT a.* FROM [stage].[tfnUCCLotDataDaily]('A') a
-				
-
 			---------------------------------------------------------------------------
 			-- UPDATE RECORDS
 			---------------------------------------------------------------------------
@@ -105,7 +87,7 @@ BEGIN
 			SET @outStr = N' INSERT INTO dbo.ColumnTransactionCommitted' +
 						  N' SELECT '+Utilities.util.fninQuotes(@tableName)+N' AS TableName'
 						+ N','+ Utilities.util.fninQuotes(@IdentifyingColumnName)+N' AS IdentifyingColumnName'
-						+ N', R1.BBL +'',''+ R1.UniqueKey +'',''+R1.Easment AS IdentifyingValue'
+						+ N', R1.BBL +'',''+ R1.UniqueKey +'',''+R1.Easement AS IdentifyingValue'
 						+ N',C.COL AS [ColumnName]'
 						+ N',C.VAL1 AS NewValue'
 						+ N',C.VAL2 AS OldValue'
@@ -149,13 +131,41 @@ BEGIN
 			BEGIN
 				EXEC sp_executesql @outStr
 			END
-		COMMIT TRANSACTION
+
+			---------------------------------------------------------------------------
+			-- INSERT RECORDS
+			---------------------------------------------------------------------------
+			
+			-- Insert audit records for new rows to be inserted
+			INSERT INTO dbo.RowTransactionCommitted
+			--DECLARE @DateTimeStamp AS DATETIME = CONVERT(DATETIME,'2016-04-18 00:00:00',120)
+			--DECLARE @tableName AS VARCHAR(150) = 'acris.UCCLot'
+			--DECLARE @IdentifyingColumnName AS VARCHAR(255) = 'BBL + UniqueKey + Easement'
+			SELECT	@tableName
+					,@IdentifyingColumnName
+					,a.BBL + ',' + a.UniqueKey + ',' + a.Easement 
+					, 1, 0, 0
+					,@DateTimeStamp
+					,GETDATE() 
+			FROM  [stage].[tfnUCCLotDataDaily]('A') a
+		
+
+			if @Mode<>'DEBUG'
+			--Actually Insert Records
+				INSERT INTO acris.UCCLot
+				SELECT a.* FROM [stage].[tfnUCCLotDataDaily]('A') a
+				
+
+		IF (@InTransaction=0)
+			COMMIT TRANSACTION
 		RETURN 0
 	END TRY
 	BEGIN CATCH
-		ROLLBACK TRANSACTION
-		SET @ErrorMessage=ERROR_MESSAGE()
-		RETURN ERROR_NUMBER() 
+		IF (@InTransaction=0)
+			ROLLBACK TRANSACTION;
+		ELSE 
+			ROLLBACK TRANSACTION LTUCCLotDataDailyImport;
+		THROW;
 	END CATCH
 END;
 

@@ -8,7 +8,7 @@ GO
 
 -- Date Created:	09/13/2016
 	
--- Dates Modified:	
+-- Dates Modified:	09/14/2016
 
 -- Description:		This function returns new records to be insert and records to be updates from stage.UCCMaster
 --					
@@ -35,8 +35,8 @@ AS RETURN
 		   ,CONVERT(NUMERIC(14,2),a.[Document_amt]) AS [DocumentAmount]
 		   ,CONVERT(DATE,REPLACE(a.[Recorded_datetime],'/','-'),110) AS [DateRecorded]
 		   ,a.[Ucc_Collateral] AS UCCCollateral
-		   ,LTRIM(RTRIM(a.[Fedtax_serial_nbr])) AS FederalTaxSerialNumber
-		   ,CONVERT(DATE,REPLACE(a.[Fedtax_assessment_date],'/','-'),110) AS [FederalTaxAssessmentDate]
+		   ,IIF(LEN(LTRIM(a.[Fedtax_serial_nbr]))=0,NULL,LTRIM(RTRIM(a.[Fedtax_serial_nbr]))) AS FederalTaxSerialNumber
+		   ,IIF(LEN(LTRIM(a.[Fedtax_assessment_date]))=0,NULL,CONVERT(DATE,REPLACE(a.[Fedtax_assessment_date],'/','-'),110)) AS [FederalTaxAssessmentDate]
 		   ,LTRIM(RTRIM(a.[Rpttl_nbr])) AS RPTTLNumber
 		   ,CONVERT(DATE,REPLACE(a.[Modified date],'/','-'),110) AS [DateModified]
 		   ,a.[Reel_yr] AS ReelYear

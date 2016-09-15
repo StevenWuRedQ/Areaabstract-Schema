@@ -4,12 +4,13 @@ SET ANSI_NULLS ON
 GO
 
 
+
 -- =============================================
 -- Author:			Raj Sethi
 
 -- Date Created:	09/13/2016
 	
--- Dates Modified:	
+-- Dates Modified:	09/14/2016
 
 -- Description:		This view removes duplicate records in an stagging table. 
 --					The latest version of the record is considered for the import based on the Identity column RecordId.			
@@ -37,7 +38,7 @@ SELECT a.[RecordId]
       ,[PartialLot]
       ,[AirRights]
       ,[SubterraneanRights]
-      ,[PropertyTypeCode]
+      ,[PropertyType]
       ,[StreetNumber]
       ,[StreetName]
       ,[UnitNumber]
@@ -50,6 +51,7 @@ INNER JOIN (SELECT MAX(RecordId) AS RecordId
 				  ,[Lot]
 				  ,[Easement]
 		    ) b ON a.RecordId=b.RecordId
+
 
 
 
