@@ -66,7 +66,7 @@ BEGIN
 			--DECLARE @tableName AS VARCHAR(150) = 'acris.MortgageDeedParty'
 			--DECLARE @IdentifyingColumnName AS VARCHAR(255) ='UniqueKey + PartType + Name'
 			SELECT @tableName, @IdentifyingColumnName
-			       ,a.UniqueKey + ',' + a.PartyType + ',' + a.[Name]
+			       ,a.UniqueKey + ',' + a.PartyType + ',"' + a.[Name]+'"'
 				   ,0, 0, 1, @DateTimeStamp, GETDATE() 
 			FROM[stage].[tfnMortgageDeedPartyDataDaily]('U') a
 				
@@ -87,7 +87,7 @@ BEGIN
 			SET @outStr = N' INSERT INTO dbo.ColumnTransactionCommitted' +
 						  N' SELECT '+Utilities.util.fninQuotes(@tableName)+N' AS TableName'
 						+ N','+ Utilities.util.fninQuotes(@IdentifyingColumnName)+N' AS IdentifyingColumnName'
-						+ N', R1.UniqueKey +'',''+ R1.PartyType +'',''+R1.Name AS IdentifyingValue'
+						+ N', R1.UniqueKey +'',''+ R1.PartyType +'',"''+ R1.Name +''"'' AS IdentifyingValue'
 						+ N',C.COL AS [ColumnName]'
 						+ N',C.VAL1 AS NewValue'
 						+ N',C.VAL2 AS OldValue'
@@ -144,7 +144,7 @@ BEGIN
 			--DECLARE @IdentifyingColumnName AS VARCHAR(255) = 'UniqueKey + PartType + Name'
 			SELECT	@tableName
 					,@IdentifyingColumnName
-					,a.UniqueKey + ',' + a.PartyType + ',' + a.[Name] 
+					,a.UniqueKey + ',' + a.PartyType + ',"' + a.[Name] +'"' 
 					, 1, 0, 0
 					,@DateTimeStamp
 					,GETDATE() 

@@ -10,10 +10,10 @@ BEGIN
 	
 	DECLARE @PartyType VARCHAR(MAX)='';
 
-	SELECT @PartyType=acris.fnGetPartyTypeDescription(@PartyTypeCode, adoc.[PARTY1 TYPE], adoc.[PARTY2 TYPE], adoc.[PARTY3 TYPE])
-	FROM	acris.ACRIS_Master am	            
-	INNER JOIN	acris.MD_Document_Control_Codes adoc ON am.Doc_Type=adoc.[DOC  TYPE]    
-	WHERE am.Unique_Key=@UniqueKey
+	SELECT	@PartyType = Acris.fnGetPartyTypeDescription(@PartyTypeCode, adoc.Party1Type, adoc.Party2Type, adoc.Party3Type)
+	FROM	Acris.MortgageDeedMaster AS am
+	INNER JOIN Acris.DocumentControlCodes AS adoc ON am.DocumentTypeCode = adoc.DocumentType
+	WHERE	am.UniqueKey = @UniqueKey;
 	
 	RETURN @PartyType;
 END;

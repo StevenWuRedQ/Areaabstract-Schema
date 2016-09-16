@@ -21,9 +21,9 @@ RETURNS @UniqueDocKeys TABLE
 	PercentageOfTransaction			NUMERIC(15,6) NULL,
 	DateRecorded					DATE NULL,
 	DateModified					DATE NULL,
-	BoroughOfRecord					VARCHAR(1) NULL,
+	RecordedBorough					VARCHAR(1) NULL,
 	Remarks							VARCHAR(MAX) NULL,
-	LastUpdatedDate					DATETIME NULL,
+	DateLastUpdated					DATETIME NULL,
 	URL								VARCHAR(500)
 )
 BEGIN
@@ -31,14 +31,14 @@ BEGIN
 		INSERT @UniqueDocKeys      
 		SELECT	ROW_NUMBER() OVER (ORDER BY DateRecorded DESC, UniqueKey DESC) RowNo, BBLE, UniqueKey, CRFN, PropertyType, DocumentType, DocumentTypeDescription, 
 				DocumentClassCodeDescription, DocumentDate, DocumentAmount, PercentageOfTransaction, DateRecorded, DateModified, 
-				BoroughOfRecord, acris.fnGetDocumentRemarks(UniqueKey) AS Remarks, LastUpdateDate, 'https://a836-acris.nyc.gov/DS/DocumentSearch/DocumentImageView?doc_id='+UniqueKey AS URL
+				RecordedBorough, acris.fnGetDocumentRemarks(UniqueKey) AS Remarks, DateLastUpdated, 'https://a836-acris.nyc.gov/DS/DocumentSearch/DocumentImageView?doc_id='+UniqueKey AS URL
 		FROM acris.vwDocumentsByBBLE
 		WHERE acris.vwDocumentsByBBLE.BBLE LIKE @BBLE AND acris.vwDocumentsByBBLE.DocumentType=@DocumentType
 	ELSE
 		INSERT @UniqueDocKeys      
 		SELECT	ROW_NUMBER() OVER (ORDER BY DateRecorded DESC, UniqueKey DESC) RowNo, BBLE, UniqueKey, CRFN, PropertyType, DocumentType, DocumentTypeDescription, 
 				DocumentClassCodeDescription, DocumentDate, DocumentAmount, PercentageOfTransaction, DateRecorded, DateModified, 
-				BoroughOfRecord, acris.fnGetDocumentRemarks(UniqueKey) AS Remarks, LastUpdateDate, 'https://a836-acris.nyc.gov/DS/DocumentSearch/DocumentImageView?doc_id='+UniqueKey AS URL
+				RecordedBorough, acris.fnGetDocumentRemarks(UniqueKey) AS Remarks, DateLastUpdated, 'https://a836-acris.nyc.gov/DS/DocumentSearch/DocumentImageView?doc_id='+UniqueKey AS URL
 		FROM acris.vwDocumentsByBBLE
 		WHERE acris.vwDocumentsByBBLE.BBLE LIKE @BBLE 
     RETURN;

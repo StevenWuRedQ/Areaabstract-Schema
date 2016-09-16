@@ -15,7 +15,7 @@ AS -- Returns the stock level for the product.
         DECLARE @ret AS INT;
 
         SET @ret = ( SELECT COUNT(*)
-                     FROM   [AreaAbstract].[Acris].tfnGetSimilarBuyersAndSellersOnDeed(@DeedDocumentUniqueKey) tk
+                     FROM  [Acris].tfnGetSimilarBuyersAndSellersOnDeed(@DeedDocumentUniqueKey) tk
                           -- WHERE Utilities.dbo.fnIsStopWord(tk.CommonToken)=0
                    )
 

@@ -51,6 +51,6 @@ AS RETURN
 			   )
 )
 
-
+--SELECT * FROM stage.tfnMortgageDeedMasterDataDaily('A')
 
 GO

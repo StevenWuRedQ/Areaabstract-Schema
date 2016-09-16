@@ -67,7 +67,7 @@ BEGIN
 		   ,DB1.DateModified
 		   ,DB1.BoroughOfRecord
 		   ,Acris.fnGetDocumentRemarks(DB1.UniqueKey) AS Remarks
-		   ,DB1.LastUpdateDate
+		   ,DB1.DateLastUpdated
 		   ,GETDATE() AS DateProcessed
 	FROM	(SELECT	*
 				   ,ROW_NUMBER() OVER (PARTITION BY BBLE ORDER BY DB.DocumentDate DESC, DB.UniqueKey DESC) AS RowNumber
@@ -76,8 +76,8 @@ BEGIN
 	WHERE	DB1.RowNumber = 1;
 
 
-	TRUNCATE TABLE AreaAbstract.dbo.LotsPerLatestDeed;
+	TRUNCATE TABLE dbo.LotsPerLatestDeed;
 	INSERT INTO dbo.LotsPerLatestDeed
-	SELECT DeedUniqueKey, COUNT(DeedUniqueKey) NumberOfLots FROM [AreaAbstract].[dbo].[LatestDeedDocument] GROUP BY DeedUniqueKey
+	SELECT DeedUniqueKey, COUNT(DeedUniqueKey) NumberOfLots FROM [dbo].[LatestDeedDocument] GROUP BY DeedUniqueKey
 END
 GO

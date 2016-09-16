@@ -10,7 +10,7 @@ BEGIN
 	
 	DECLARE @PartyName VARCHAR(MAX)='';
 
-	SELECT @PartyName=@PartyName + IIF(@PartyName ='', '',' / ') + LTRIM(RTRIM(ap.Name)) FROM acris.ACRIS_Parties ap WHERE ap.Unique_key=@UniqueKey AND ap.Party_type=@PartyType 
+	SELECT @PartyName=@PartyName + IIF(@PartyName ='', '',' / ') + LTRIM(RTRIM(ap.Name)) FROM acris.MortgageDeedParty AS ap WHERE ap.UniqueKey=@UniqueKey AND ap.PartyType=@PartyType 
 	
 	RETURN @PartyName;
 END;

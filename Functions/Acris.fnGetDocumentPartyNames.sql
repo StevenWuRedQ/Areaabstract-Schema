@@ -6,10 +6,10 @@ CREATE FUNCTION [Acris].[fnGetDocumentPartyNames](@DocUniqueKey VARCHAR(16), @Pa
 RETURNS VARCHAR(MAX)
 AS
 BEGIN
-DECLARE @PartyNames VARCHAR(MAX);
+	DECLARE @PartyNames VARCHAR(MAX);
 
-SELECT @PartyNames=COALESCE(@PartyNames,' -AND- ') + LTRIM(RTRIM(ap.Name)) FROM acris.ACRIS_PARTIES ap WHERE ap.unique_key=@DocUniqueKey AND ap.Party_type=@PartyType 
+	SELECT @PartyNames=COALESCE(@PartyNames,' -AND- ') + LTRIM(RTRIM(ap.Name)) FROM acris.MortgageDeedParty ap WHERE ap.UniqueKey=@DocUniqueKey AND ap.PartyType=@PartyType 
 
-RETURN @PartyNames;
+	RETURN @PartyNames;
 END;
 GO

@@ -6,10 +6,10 @@ CREATE FUNCTION [Acris].[fnUCCGetDocumentPartyNames](@DocUniqueKey VARCHAR(16), 
 RETURNS VARCHAR(MAX)
 AS
 BEGIN
-DECLARE @PartyNames VARCHAR(MAX);
+	DECLARE @PartyNames VARCHAR(MAX);
 
-SELECT @PartyNames=COALESCE(@PartyNames +' -- AND -- ','') + LTRIM(RTRIM(up.Name)) FROM ucc.Ucc_PARTIES up WHERE up.unique_key=@DocUniqueKey AND up.Party_type=@PartyType 
+	SELECT @PartyNames=COALESCE(@PartyNames +' -- AND -- ','') + LTRIM(RTRIM(up.Name)) FROM acris.UCCParty AS up WHERE up.UniqueKey=@DocUniqueKey AND up.PartyType=@PartyType 
 
-RETURN @PartyNames;
+	RETURN @PartyNames;
 END;
 GO

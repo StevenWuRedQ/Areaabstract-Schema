@@ -7,7 +7,7 @@ CREATE TABLE [Acris].[MortgageDeedCrossReference]
 [ReelBorough] [varchar] (1) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
 [ReelNumber] [varchar] (5) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
 [ReelPage] [varchar] (5) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
-[LastUpdated] [datetime] NULL
+[DateLastUpdated] [datetime] NULL
 ) ON [PRIMARY]
 GO
 ALTER TABLE [Acris].[MortgageDeedCrossReference] ADD CONSTRAINT [PK_MasterDeedCrossReference] PRIMARY KEY CLUSTERED  ([UniqueKey]) ON [PRIMARY]
