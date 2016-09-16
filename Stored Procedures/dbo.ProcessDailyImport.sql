@@ -85,9 +85,26 @@ BEGIN
 END
 
 /*
+Test Harness to insure imports are working
+1) Rename the original table with an org (or any other) suffix
+2) Create a new "target table" using the definition of the original table. Rename Primary Key before saving the new target table definition.
+3) Run the SSIS package only upto to the point where staging table/(s) are populated
+4) Run the script below (it will only execute the insert portion of the code since target table is empty)
+5) Check results to confirm records match staging table data, dbo.RowTransactionCommitted, dbo.ColumnTransactionCommitted, vwXXXXXNoDups Views, tfnxxxxDailyImport() and target table 
+6) Now modify single or multiple rows in the staging table to test the remaining parts of the stored procedure
+7) Run the script below again
+8) Confirm the results in dbo.RowTransactionCommitted, dbo.ColumnTransactionCommitted, vwXXXXXNoDups Views, tfnxxxxDailyImport() and target table 
+9) Once the tests are finished delete the new target table and rename the original table back to its original name  
+*/
+/*
 DECLARE @errorCode AS INTEGER=0
-EXEC @errorCode=[dbo].[ProcessDailyImport] '2015-08-31 00:00:00', 'UCC'
+--EXEC @errorCode=[dbo].[ProcessDailyImport] '2015-08-31 00:00:00', 'UCC'
 --EXEC @errorCode=[Acris].[UCCMasterDataDailyImport] '2015-08-31 00:00:00';
+--EXEC @errorCode=[Acris].[MortgageDeedMasterDataDailyImport] '2015-09-09 00:00:00';
+--EXEC @errorCode=[Acris].[MortgageDeedCrossReferenceDataDailyImport] '2015-09-09 00:00:00';
+--EXEC @errorCode=[Acris].[MortgageDeedLotDataDailyImport] '2015-09-09 00:00:00';
+--EXEC @errorCode=[Acris].[MortgageDeedPartyDataDailyImport] '2015-09-09 00:00:00';
+EXEC @errorCode=[Acris].[MortgageDeedRemarkDataDailyImport] '2015-09-09 00:00:00';
 SELECT  @errorCode
 */
 GO
