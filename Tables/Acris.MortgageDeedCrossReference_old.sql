@@ -1,4 +1,4 @@
-CREATE TABLE [Acris].[MortgageDeedCrossReference]
+CREATE TABLE [Acris].[MortgageDeedCrossReference_old]
 (
 [UniqueKey] [varchar] (16) COLLATE SQL_Latin1_General_CP1_CI_AS NOT NULL,
 [CRFN] [varchar] (13) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
@@ -10,9 +10,5 @@ CREATE TABLE [Acris].[MortgageDeedCrossReference]
 [DateLastUpdated] [datetime] NULL
 ) ON [PRIMARY]
 GO
-ALTER TABLE [Acris].[MortgageDeedCrossReference] ADD CONSTRAINT [PK_MasterDeedCrossReferenceUniqueKey] PRIMARY KEY CLUSTERED  ([UniqueKey]) ON [PRIMARY]
-GO
-CREATE NONCLUSTERED INDEX [IX_CRFN] ON [Acris].[MortgageDeedCrossReference] ([CRFN]) ON [PRIMARY]
-GO
-CREATE NONCLUSTERED INDEX [IX_ReelKey] ON [Acris].[MortgageDeedCrossReference] ([ReelNumber], [ReelPage], [ReelYear]) ON [PRIMARY]
+ALTER TABLE [Acris].[MortgageDeedCrossReference_old] ADD CONSTRAINT [PK_MasterDeedCrossReference] PRIMARY KEY CLUSTERED  ([UniqueKey]) ON [PRIMARY]
 GO

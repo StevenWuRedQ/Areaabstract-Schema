@@ -29,16 +29,20 @@ AS RETURN
 (	
 	SELECT	a.[UniqueKey]
 		   ,CONVERT(DATE,REPLACE(a.[DateFileCreated],'/','-'),110) AS [DateFileCreated]
-		   ,a.[CRFN]
+		   ,CASE 
+				WHEN LEN(LTRIM(a.[CRFN]))=0 THEN NULL
+				WHEN a.[CRFN] IS NULL THEN NULL
+				ELSE a.[CRFN]
+			END AS CRFN
 		   ,a.[RecordedBorough]
 		   ,a.[DocumentTypeCode]
 		   ,CONVERT(DATE,REPLACE(a.[DocumentDate],'/','-'),110) AS [DocumentDate]
 		   ,CONVERT(NUMERIC(14,2),a.[DocumentAmount]) AS [DocumentAmount]
 		   ,CONVERT(DATE,REPLACE(a.[DateRecorded],'/','-'),110) AS [DateRecorded]
 		   ,CONVERT(DATE,REPLACE(a.[DateModified],'/','-'),110) AS [DateModified]
-		   ,a.[ReelYear]
-		   ,a.[ReelNumber]
-		   ,a.[ReelPage]
+		   ,Utilities.[util].[fnLPadString](a.[ReelYear],'0',4) AS [ReelYear]
+		   ,Utilities.[util].[fnLPadString](a.[ReelNumber],'0',5) AS [ReelNumber]
+		   ,Utilities.[util].[fnLPadString](a.[ReelPage],'0',5) AS [ReelPage]
 		   ,CONVERT(NUMERIC(15,6),IIF(a.[PercentageOftransaction]=' ', NULL,a.[PercentageOftransaction])) AS [PercentageOftransaction]
 		   ,GETDATE() AS DateLastUpdated
 	FROM	[stage].[vwMortgageDeedMasterNoDups] a

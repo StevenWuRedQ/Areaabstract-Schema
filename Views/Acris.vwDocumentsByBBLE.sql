@@ -5,6 +5,7 @@ GO
 
 
 
+
 CREATE VIEW [Acris].[vwDocumentsByBBLE]
 AS
 SELECT	alot.BBL AS BBLE
@@ -21,9 +22,13 @@ SELECT	alot.BBL AS BBLE
 	   ,ama.DateModified
 	   ,ama.RecordedBorough
 	   ,ama.DateLastUpdated
+	   ,ama.ReelYear
+	   ,ama.ReelNumber
+	   ,ama.ReelPage
 FROM	Acris.MortgageDeedMaster AS ama
 INNER JOIN Acris.MortgageDeedLot AS alot ON ama.UniqueKey = alot.UniqueKey
 INNER JOIN Acris.DocumentControlCodes AS adoc ON ama.DocumentTypeCode = adoc.DocumentType;
+
 
 
 GO

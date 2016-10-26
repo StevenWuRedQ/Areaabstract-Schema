@@ -1,4 +1,4 @@
-CREATE TABLE [Acris].[MortgageDeedMaster]
+CREATE TABLE [Acris].[MortgageDeedMaster_old]
 (
 [UniqueKey] [varchar] (16) COLLATE SQL_Latin1_General_CP1_CI_AS NOT NULL,
 [DateFileCreated] [date] NULL,
@@ -16,11 +16,7 @@ CREATE TABLE [Acris].[MortgageDeedMaster]
 [DateLastUpdated] [datetime] NULL
 ) ON [PRIMARY]
 GO
-ALTER TABLE [Acris].[MortgageDeedMaster] ADD CONSTRAINT [PK_MortgageDeedsMasterUniqueKey] PRIMARY KEY CLUSTERED  ([UniqueKey]) ON [PRIMARY]
+ALTER TABLE [Acris].[MortgageDeedMaster_old] ADD CONSTRAINT [PK_MortgageDeedsMaster] PRIMARY KEY CLUSTERED  ([UniqueKey]) ON [PRIMARY]
 GO
-CREATE NONCLUSTERED INDEX [IX_CRFN] ON [Acris].[MortgageDeedMaster] ([CRFN]) ON [PRIMARY]
-GO
-CREATE NONCLUSTERED INDEX [IX_ReelKey] ON [Acris].[MortgageDeedMaster] ([ReelNumber], [ReelPage], [ReelYear]) ON [PRIMARY]
-GO
-EXEC sp_addextendedproperty N'MS_Description', N'This is the Mortgage and Deeds Master Table', 'SCHEMA', N'Acris', 'TABLE', N'MortgageDeedMaster', NULL, NULL
+EXEC sp_addextendedproperty N'MS_Description', N'This is the Mortgage and Deeds Master Table', 'SCHEMA', N'Acris', 'TABLE', N'MortgageDeedMaster_old', NULL, NULL
 GO

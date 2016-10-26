@@ -21,20 +21,18 @@ GO
 
 -- Where used:		
 -- =============================================
-
-CREATE FUNCTION [Acris].[isArmsLenghsFilterByDocUniqueKey](@DeedDocumentUniqueKey VARCHAR(16))
-RETURNS VARCHAR(20)
-AS 
+CREATE PROCEDURE [arm].[InsertIntoSalesAreCompany]
+AS
 BEGIN
-  
-	DECLARE	@ret AS INT;
+	-- SET NOCOUNT ON added to prevent extra result sets from
+	-- interfering with SELECT statements.
+	SET NOCOUNT ON;
 
-	SET @ret = (SELECT	COUNT(*)
-				FROM	[Acris].tfnGetSimilarBuyersAndSellersOnDeed(@DeedDocumentUniqueKey) tk
-               
-			   );
+	TRUNCATE TABLE arm.SalesAreCompany;
+       
+	INSERT	INTO arm.SalesAreCompany
+	SELECT	*
+	FROM	[arm].[vwIsPartyInSaleaCompany];
 
-	RETURN @ret;
-    
 END;
 GO
