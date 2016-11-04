@@ -6,6 +6,7 @@ GO
 
 
 
+
 CREATE VIEW [Acris].[vwDocumentsByBBLE]
 AS
 SELECT	alot.BBL AS BBLE
@@ -15,7 +16,10 @@ SELECT	alot.BBL AS BBLE
 	   ,ama.DocumentTypeCode AS DocumentType
 	   ,adoc.DocumentTypeDescription
 	   ,adoc.ClassCodeDescription AS DocumentClassCodeDescription
-	   ,ama.DocumentDate
+	   ,CASE 
+			WHEN ama.DocumentDate<='1899-12-30' THEN NULL
+			ELSE ama.DocumentDate
+		END AS DocumentDate
 	   ,ama.DocumentAmount
 	   ,ama.PercentageOfTransaction
 	   ,ama.DateRecorded
@@ -28,6 +32,7 @@ SELECT	alot.BBL AS BBLE
 FROM	Acris.MortgageDeedMaster AS ama
 INNER JOIN Acris.MortgageDeedLot AS alot ON ama.UniqueKey = alot.UniqueKey
 INNER JOIN Acris.DocumentControlCodes AS adoc ON ama.DocumentTypeCode = adoc.DocumentType;
+
 
 
 

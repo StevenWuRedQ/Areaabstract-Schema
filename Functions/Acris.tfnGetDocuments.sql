@@ -64,22 +64,22 @@ END;
    SELECT a.UniqueKey FROM [Acris].[tfnGetDocuments]('4068880046','MTGE') a
    EXCEPT
    (SELECT c.UniqueKey FROM [Acris].[tfnGetDocuments]('4068880046','SAT') a 
-   INNER JOIN [Acris].[vwMortgageDeedCrossReference] b on a.uniquekey=b.uniquekey
+   INNER JOIN [Acris].[MortgageDeedCrossReference] b on a.uniquekey=b.uniquekey
    INNER JOIN [Acris].[MortgageDeedMaster] c on c.CRFN=b.CRFN
    where b.CRFN IS NOT NULL 
    UNION ALL
    SELECT c.UniqueKey FROM [Acris].[tfnGetDocuments]('4068880046','SAT') a 
-   INNER JOIN [Acris].[vwMortgageDeedCrossReference] b on a.uniquekey=b.uniquekey
+   INNER JOIN [Acris].[MortgageDeedCrossReference] b on a.uniquekey=b.uniquekey
    INNER JOIN [Acris].[MortgageDeedMaster] c on c.ReelNumber=b.ReelNumber and c.ReelYear=b.ReelYear and c.ReelPage=b.ReelPage 
    where b.CRFN IS NULL
    UNION ALL
    SELECT  c.UniqueKey FROM [Acris].[tfnGetDocuments]('4068880046','ASST') a 
-   INNER JOIN [Acris].[vwMortgageDeedCrossReference] b on a.uniquekey=b.uniquekey
+   INNER JOIN [Acris].[MortgageDeedCrossReference] b on a.uniquekey=b.uniquekey
    INNER JOIN [Acris].[MortgageDeedMaster] c on c.CRFN=b.CRFN
    where b.CRFN IS NOT NULL
    UNION ALL
    SELECT c.UniqueKey FROM [Acris].[tfnGetDocuments]('4068880046','ASST') a 
-   INNER JOIN [Acris].[vwMortgageDeedCrossReference] b on a.uniquekey=b.uniquekey
+   INNER JOIN [Acris].[MortgageDeedCrossReference] b on a.uniquekey=b.uniquekey
    INNER JOIN [Acris].[MortgageDeedMaster] c on c.ReelNumber=b.ReelNumber and c.ReelYear=b.ReelYear and c.ReelPage=b.ReelPage 
    where b.CRFN IS NULL 
    )

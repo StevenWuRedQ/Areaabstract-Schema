@@ -8,7 +8,7 @@ GO
 
 -- Date Created:	09/06/2016
 	
--- Dates Modified:	
+-- Dates Modified:	10/26/2016
 
 -- Description:		This function returns new records to be insert and records to be updates from stage.MortgageDeedCrossReference
 --					
@@ -36,16 +36,10 @@ AS RETURN
 		   ,a.[ReelPage]
 		   ,GETDATE() AS DateLastUpdated
 	FROM	[stage].[vwMortgageDeedCrossReferenceNoDups] a
-	LEFT OUTER JOIN [Acris].[MortgageDeedCrossReference] b ON a.UniqueKey = b.UniqueKey
-	WHERE	(b.UniqueKey IS NULL
-			 AND @operationFlag = 'A'
-			)
-			OR (b.UniqueKey IS NOT NULL
-				AND @operationFlag = 'U'
-			   )
+	WHERE	@operationFlag = 'A'
 )
 
 
 
---SELECT * FROM [stage].[tfnMortgageDeedCrossReferenceDataDaily]('A')
+--SELECT * FROM [stage].[tfnMortgageDeedCrossReferenceDataDaily]('U')
 GO

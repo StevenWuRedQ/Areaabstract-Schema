@@ -28,23 +28,47 @@ CREATE FUNCTION [Acris].[tfnGetUnsatisfiedMortgages] (@BBLE VARCHAR(10))
 RETURNS TABLE
 	AS RETURN
 (	SELECT	a.UniqueKey
-	FROM	[Acris].[tfnGetDocuments](@BBLE, 'MTGE') a
+	FROM	Acris.vwDocumentsByBBLE a
+	WHERE	a.BBLE = @BBLE
+			AND (a.DocumentType = 'MTGE' OR a.DocumentType = 'AGMT'	OR a.DocumentType = 'ASST')
 	EXCEPT
-	(
+	(	SELECT	c.UniqueKey
+		FROM	[Acris].[vwSatisfactionAndAssignmentCrossReeferenceRecords] a
+		INNER JOIN [Acris].[MortgageDeedMaster] c ON c.CRFN = a.CRFN
+		WHERE	a.CRFN IS NOT NULL
+				AND a.BBLE = @BBLE
+		UNION
 		SELECT	c.UniqueKey
-		  FROM		[Acris].[tfnGetDocuments](@BBLE, 'SAT') a
-		  INNER JOIN [Acris].[MortgageDeedCrossReference] b ON a.UniqueKey = b.UniqueKey
-		  INNER JOIN [Acris].[MortgageDeedMaster] c ON c.CRFN = b.CRFN
-		  UNION
-		  SELECT	c.UniqueKey
-		  FROM		[Acris].[tfnGetDocuments](@BBLE, 'SAT') a
-		  INNER JOIN [Acris].[MortgageDeedCrossReference] b ON a.UniqueKey = b.UniqueKey
-		  INNER JOIN [Acris].[MortgageDeedMaster] c ON c.ReelNumber = b.ReelNumber
-													   AND c.ReelYear = b.ReelYear
-													   AND c.ReelPage = b.ReelPage
-		  WHERE		b.CRFN IS NULL
+		FROM	[Acris].[vwSatisfactionAndAssignmentCrossReeferenceRecords] a
+		INNER JOIN [Acris].[MortgageDeedMaster] c ON c.ReelNumber = a.ReelNumber AND a.ReelPage = c.ReelPage
+		WHERE	a.CRFN IS NULL
+				AND a.BBLE = @BBLE
+		/*
+		UNION
+		--Sometimes Assignment mortgages have reel-page reference of the previous mortage **** I am not sure about this
+		SELECT	c.UniqueKey
+		FROM	[Acris].[vwSatisfactionAndAssignmentCrossReeferenceRecords] a
+		INNER JOIN	Acris.vwDocumentsByBBLE c ON Acris.fnGetReelNumber(acris.fnGetDocumentRemarks(c.UniqueKey)) = a.ReelNumber AND a.ReelPage = Acris.fnGetReelPage(acris.fnGetDocumentRemarks(c.UniqueKey))
+		WHERE	a.BBLE = @BBLE
+				AND c.BBLE=@BBLE
+				AND (c.DocumentType = 'ASST')
+		*/
 	)
 );
 
---SELECT * FROM 
+/*
+SELECT a.*, 'https://a836-acris.nyc.gov/DS/DocumentSearch/DocumentImageView?doc_id='+a.UniqueKey AS URL FROM Acris.vwDocumentsByBBLE a
+INNER JOIN [acris].[tfnGetUnsatisfiedMortgages] ('4068880046') b ON a.UniqueKey = b.UniqueKey
+
+SELECT a.* FROM [acris].[tfnGetUnsatisfiedMortgages] ('4068880046') b
+CROSS APPLY [Acris].[tfnGetDocumentPartiesByKey](b.UniqueKey,DEFAULT) a
+
+SELECT b.* FROM	Acris.vwDocumentsByBBLE a
+CROSS APPLY [Acris].[tfnGetDocumentPartiesByKey](a.UniqueKey,DEFAULT) b
+WHERE	a.BBLE = '4068880046'
+AND (a.DocumentType = 'MTGE' OR a.DocumentType = 'AGMT'	OR a.DocumentType = 'ASST')
+
+SELECT * FROM [dbo].[LatestDeedDocument] where BBLe='4068880046'
+SELECT * FROM [Acris].[tfnGetDocumentPartiesByKey]('FT_4740008998174',NULL)
+*/
 GO
