@@ -15,5 +15,7 @@ CREATE TABLE [Acris].[MortgageDeedParty]
 GO
 ALTER TABLE [Acris].[MortgageDeedParty] ADD CONSTRAINT [PK_MortgageDeedParty] PRIMARY KEY CLUSTERED  ([UniqueKey], [PartyType], [Name]) ON [PRIMARY]
 GO
+CREATE NONCLUSTERED INDEX [IX_MortgageDeeParty_Name] ON [Acris].[MortgageDeedParty] ([Name]) INCLUDE ([Address1], [Address2], [City], [Country], [PartyType], [State], [UniqueKey], [Zip]) ON [PRIMARY]
+GO
 CREATE NONCLUSTERED INDEX [IX_MortgageDeedParty] ON [Acris].[MortgageDeedParty] ([UniqueKey], [PartyType], [CompressedName]) ON [PRIMARY]
 GO

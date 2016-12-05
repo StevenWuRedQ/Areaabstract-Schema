@@ -12,8 +12,11 @@ CREATE TABLE [dbo].[LatestContractOfSaleorMemorandumofContract]
 [DateRecorded] [date] NULL,
 [DateModified] [date] NULL,
 [BoroughOfRecord] [varchar] (1) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
-[Remarks] [varchar] (4096) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
+[Remarks] [varchar] (max) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
+[URL] [varchar] (1024) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
 [LastUpdateDate] [datetime] NULL,
 [DateProcessed] [datetime] NOT NULL
-) ON [PRIMARY]
+) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
+GO
+ALTER TABLE [dbo].[LatestContractOfSaleorMemorandumofContract] ADD CONSTRAINT [PK_LatestContractOfSaleorMemorandumofContract] PRIMARY KEY CLUSTERED  ([BBLE]) ON [PRIMARY]
 GO

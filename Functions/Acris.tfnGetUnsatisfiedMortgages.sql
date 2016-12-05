@@ -6,59 +6,86 @@ GO
 -- =============================================
 -- Author:			Raj Sethi
 
--- Date Created:	05/27/2016
+-- Date Created:	
 
--- Dates Modified:	08/17/2016
+-- Dates Modified:	11/21/2016
 
 -- Description:		This function returns all mortgage documents that do not have a corresponding satisfaction document
 --					
 
--- Input tables:	stage.vwccisAppearanceDataDailyDeDupV2
---					stage.ccisAppearanceDataDaily
+-- Input tables:	Acris.vwDocumentsByBBLE
+--					Acris.vwSatisfactionAndAssignmentCrossReeferenceRecords
 
 -- Tables modified: None
 
 -- Arguments:		@BBLE BBLE of the Property
 --					
--- Outputs:			Master 
+-- Outputs:			See Below 
 
--- Where used:		ccis.AppearanceDataDailyImport Stored Procedure
+-- Where used:		PropertyWebApi
 -- =============================================
 CREATE FUNCTION [Acris].[tfnGetUnsatisfiedMortgages] (@BBLE VARCHAR(10))
-RETURNS TABLE
-	AS RETURN
-(	SELECT	a.UniqueKey
+RETURNS @UnsatisfiedMortgages TABLE 
+(
+    -- Columns returned by the function
+	RowNo							INT PRIMARY KEY,
+	BBLE							VARCHAR(11) NOT NULL,
+	UniqueKey						VARCHAR(16) NOT NULL,
+	CRFN							VARCHAR(13) NULL,
+	PropertyType					VARCHAR(2) NULL,
+	DocumentType					VARCHAR(8) NOT NULL,
+	DocumentTypeDescription			VARCHAR(30) NULL,
+	DocumentClassCodeDescription	VARCHAR(27),
+	DocumentDate					DATE NULL,
+	DocumentAmount					NUMERIC(14,2) NULL,
+	PercentageOfTransaction			NUMERIC(15,6) NULL,
+	DateRecorded					DATE NULL,
+	DateModified					DATE NULL,
+	RecordedBorough					VARCHAR(1) NULL,
+	Remarks							VARCHAR(MAX) NULL,
+	DateLastUpdated					DATETIME NULL,
+	URL								VARCHAR(500),
+	ReelYear						VARCHAR(4),
+	ReelNumber						VARCHAR(5),
+	ReelPage						VARCHAR(5)
+)
+BEGIN
+
+	INSERT @UnsatisfiedMortgages      
+	SELECT	ROW_NUMBER() OVER (ORDER BY DateRecorded DESC, UniqueKey DESC) RowNo, a.BBLE, a.UniqueKey, a.CRFN, a.PropertyType, a.DocumentType, a.DocumentTypeDescription, 
+				a.DocumentClassCodeDescription, a.DocumentDate, a.DocumentAmount, a.PercentageOfTransaction, a.DateRecorded, a.DateModified, 
+				a.RecordedBorough, acris.fnGetDocumentRemarks(UniqueKey) AS Remarks, a.DateLastUpdated, 'https://a836-acris.nyc.gov/DS/DocumentSearch/DocumentImageView?doc_id='+a.UniqueKey AS URL,
+				a.ReelYear, a.ReelNumber, a.ReelPage
 	FROM	Acris.vwDocumentsByBBLE a
 	WHERE	a.BBLE = @BBLE
 			AND (a.DocumentType = 'MTGE' OR a.DocumentType = 'AGMT'	OR a.DocumentType = 'ASST')
-	EXCEPT
-	(	SELECT	c.UniqueKey
-		FROM	[Acris].[vwSatisfactionAndAssignmentCrossReeferenceRecords] a
-		INNER JOIN [Acris].[MortgageDeedMaster] c ON c.CRFN = a.CRFN
-		WHERE	a.CRFN IS NOT NULL
-				AND a.BBLE = @BBLE
-		UNION
-		SELECT	c.UniqueKey
-		FROM	[Acris].[vwSatisfactionAndAssignmentCrossReeferenceRecords] a
-		INNER JOIN [Acris].[MortgageDeedMaster] c ON c.ReelNumber = a.ReelNumber AND a.ReelPage = c.ReelPage
-		WHERE	a.CRFN IS NULL
-				AND a.BBLE = @BBLE
-		/*
-		UNION
-		--Sometimes Assignment mortgages have reel-page reference of the previous mortage **** I am not sure about this
-		SELECT	c.UniqueKey
-		FROM	[Acris].[vwSatisfactionAndAssignmentCrossReeferenceRecords] a
-		INNER JOIN	Acris.vwDocumentsByBBLE c ON Acris.fnGetReelNumber(acris.fnGetDocumentRemarks(c.UniqueKey)) = a.ReelNumber AND a.ReelPage = Acris.fnGetReelPage(acris.fnGetDocumentRemarks(c.UniqueKey))
-		WHERE	a.BBLE = @BBLE
-				AND c.BBLE=@BBLE
-				AND (c.DocumentType = 'ASST')
-		*/
-	)
-);
+			AND a.UniqueKey NOT IN 	(	SELECT	c.UniqueKey
+										FROM	[Acris].[vwSatisfactionAndAssignmentCrossReeferenceRecords] a
+										INNER JOIN [Acris].[MortgageDeedMaster] c ON c.CRFN = a.CRFN
+										WHERE	a.CRFN IS NOT NULL
+												AND a.BBLE = @BBLE
+										UNION
+										SELECT	c.UniqueKey
+										FROM	[Acris].[vwSatisfactionAndAssignmentCrossReeferenceRecords] a
+										INNER JOIN [Acris].[MortgageDeedMaster] c ON c.ReelNumber = a.ReelNumber AND a.ReelPage = c.ReelPage
+										WHERE	a.CRFN IS NULL
+												AND a.BBLE = @BBLE
+										/*
+										UNION
+										--Sometimes Assignment mortgages have reel-page reference of the previous mortage **** I am not sure about this
+										SELECT	c.UniqueKey
+										FROM	[Acris].[vwSatisfactionAndAssignmentCrossReeferenceRecords] a
+										INNER JOIN	Acris.vwDocumentsByBBLE c ON Acris.fnGetReelNumber(acris.fnGetDocumentRemarks(c.UniqueKey)) = a.ReelNumber AND a.ReelPage = Acris.fnGetReelPage(acris.fnGetDocumentRemarks(c.UniqueKey))
+										WHERE	a.BBLE = @BBLE
+												AND c.BBLE=@BBLE
+												AND (c.DocumentType = 'ASST')
+										*/
+									)
+	RETURN;
+END
 
 /*
-SELECT a.*, 'https://a836-acris.nyc.gov/DS/DocumentSearch/DocumentImageView?doc_id='+a.UniqueKey AS URL FROM Acris.vwDocumentsByBBLE a
-INNER JOIN [acris].[tfnGetUnsatisfiedMortgages] ('4068880046') b ON a.UniqueKey = b.UniqueKey
+SELECT * FROM [acris].[tfnGetUnsatisfiedMortgages] ('4068880046') 
 
 SELECT a.* FROM [acris].[tfnGetUnsatisfiedMortgages] ('4068880046') b
 CROSS APPLY [Acris].[tfnGetDocumentPartiesByKey](b.UniqueKey,DEFAULT) a

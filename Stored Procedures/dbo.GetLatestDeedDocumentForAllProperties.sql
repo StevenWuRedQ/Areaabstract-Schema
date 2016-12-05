@@ -10,49 +10,8 @@ BEGIN
 --interfering with SELECT statements.
 	SET NOCOUNT ON;
 
-	/* NOT OPTIMIZED HENCE REPLACED
-	INSERT INTO AreaAbstract.dbo.LatestDeedDocument
-	SELECT ld.BBLE
-	,ld.UniqueKey AS DeedUniqueKey
-	,ld.PropertyType
-	,ld.DocumentType
-	,ld.DocumentTypeDescription
-	,ld.DocumentClassCodeDescription
-	,ld.DocumentDate
-	,ld.DocumentAmount
-	,ld.PercentageOfTransaction
-	,ld.DateRecorded
-	,ld.DateModified
-	,ld.BoroughOfRecord
-	,ld.Remarks
-	,ld.LastUpdatedDate
-	,GETDATE() AS DateProcessed FROM [NYC_SRC].[nycdof].[AssUnionView] ta
-	--NYCDOF.dof.TaxValuationAssessmentTentative ta
-	CROSS APPLY AreaAbstract.acris.tfnGetLatestDocument(ta.[BBLE],'DEED') ld
-	*/
-	/*
-	ISSUES WITH EXECUTION TIME ON SQL SERVER 2016
-
-	INSERT INTO AreaAbstract.dbo.LatestDeedDocument
-	SELECT	DB1.BBLE, DB1.UniqueKey AS DeedUniqueKey, DB1.PropertyType, DB1.DocumentType, DB1.DocumentTypeDescription, 
-			DB1.DocumentClassCodeDescription, DB1.DocumentDate, DB1.DocumentAmount, DB1.PercentageOfTransaction, DB1.DateRecorded, DB1.DateModified, 
-			DB1.BoroughOfRecord, acris.fnGetDocumentRemarks(DB1.UniqueKey) AS Remarks, DB1.LastUpdateDate, GETDATE() AS DateProcessed
-	FROM acris.vwDocumentsByBBLE DB1
-	INNER JOIN (SELECT	DB.BBLE, MAX(DB.UniqueKey) AS UniqueKey
-				FROM acris.vwDocumentsByBBLE DB
-				INNER JOIN (SELECT	BBLE, MAX(DocumentDate) AS LatestDocumentDate
-							FROM acris.vwDocumentsByBBLE
-							WHERE acris.vwDocumentsByBBLE.DocumentType='DEED' OR acris.vwDocumentsByBBLE.DocumentType='DEEDO'
-							GROUP BY BBLE
-							-- This Query is to find the latest date on Deed
-							) SS ON SS.BBLE = DB.BBLE AND SS.LatestDocumentDate = DB.DocumentDate 
-				WHERE DB.DocumentType='DEED' OR DB.DocumentType='DEEDO'
-				GROUP BY DB.BBLE
-				-- This Query is to get the last deed on that day since deed dcoument key's are not in ascending seq 
-				) SS2 ON SS2.BBLE = DB1.BBLE
-	WHERE DB1.UniqueKey=SS2.UniqueKey
-	*/
 	TRUNCATE TABLE dbo.LatestDeedDocument;
+	
 	INSERT	INTO dbo.LatestDeedDocument
 	SELECT	DB1.BBLE
 		   ,DB1.UniqueKey AS DeedUniqueKey
@@ -67,6 +26,7 @@ BEGIN
 		   ,DB1.DateModified
 		   ,DB1.BoroughOfRecord
 		   ,Acris.fnGetDocumentRemarks(DB1.UniqueKey) AS Remarks
+		   ,'https://a836-acris.nyc.gov/DS/DocumentSearch/DocumentImageView?doc_id='+DB1.UniqueKey AS URL
 		   ,DB1.DateLastUpdated
 		   ,GETDATE() AS DateProcessed
 	FROM	(SELECT	*
@@ -80,4 +40,6 @@ BEGIN
 	INSERT INTO dbo.LotsPerLatestDeed
 	SELECT DeedUniqueKey, COUNT(DeedUniqueKey) NumberOfLots FROM [dbo].[LatestDeedDocument] GROUP BY DeedUniqueKey
 END
+
+--EXEC [dbo].[GetLatestDeedDocumentForAllProperties]
 GO

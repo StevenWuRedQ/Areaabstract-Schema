@@ -13,7 +13,12 @@ CREATE TABLE [dbo].[LatestDeedDocument]
 [DateModified] [date] NULL,
 [BoroughOfRecord] [varchar] (1) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
 [Remarks] [varchar] (max) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
+[URL] [varchar] (1024) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
 [LastUpdatedDate] [datetime] NULL,
 [DateProcessed] [datetime] NULL
 ) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
+GO
+ALTER TABLE [dbo].[LatestDeedDocument] ADD CONSTRAINT [PK_LatestDeedDocument] PRIMARY KEY CLUSTERED  ([BBLE]) ON [PRIMARY]
+GO
+CREATE NONCLUSTERED INDEX [IX_DeedUniqueKey] ON [dbo].[LatestDeedDocument] ([DeedUniqueKey]) ON [PRIMARY]
 GO
