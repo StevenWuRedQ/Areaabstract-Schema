@@ -22,10 +22,11 @@ GO
 -- Where used:				
 
 -- =============================================
-CREATE PROCEDURE [Acris].[InsertMissingACRISCRRows]
+CREATE PROCEDURE [stage].[InsertMissingACRISCRRows]
 AS
 BEGIN
 	TRUNCATE TABLE stage.[MortgageDeedCrossReferenceOpenData];
+
 	INSERT	INTO stage.[MortgageDeedCrossReferenceOpenData]
 	SELECT	Utilities.[util].[fnTrim]([DOCUMENT ID]) AS [UniqueKey]
 		   ,CASE WHEN [REFERENCE BY CRFN ] IS NULL THEN NULL
@@ -45,7 +46,7 @@ BEGIN
 		   ,IIF(LEN(Utilities.[util].[fnTrim]([REFERENCE BY REEL PAGE])) = 0, '00000', Utilities.[util].[fnLPadString](Utilities.[util].[fnTrim]([REFERENCE BY REEL PAGE]),
 															  '0', 5)) AS [ReelPage]
 		   ,NULL AS [DateLastUpdated]
-	FROM	[stage].[MortgageDeedReferences_NYCOpendata_20161008]
+	FROM	[stage].[MortgageDeedReferences_NYCOpendata_20161208]
 	WHERE	((LEN(Utilities.[util].[fnTrim]([REFERENCE BY DOC ID])) <= 16)
 			 AND (LEN(Utilities.[util].[fnTrim]([REFERENCE BY CRFN ])) <= 13)
 			 AND LEN(Utilities.[util].[fnTrim]([DOCUMENT ID])) = 16
@@ -59,7 +60,7 @@ BEGIN
 
 
 	SELECT	@COUNT1 = COUNT(*)
-	FROM	[stage].[MortgageDeedReferences_NYCOpendata_20161008];
+	FROM	[stage].[MortgageDeedReferences_NYCOpendata_20161208];
 	SELECT	@COUNT1 = COUNT(*)
 	FROM	[stage].[MortgageDeedCrossReferenceOpenData];
 
