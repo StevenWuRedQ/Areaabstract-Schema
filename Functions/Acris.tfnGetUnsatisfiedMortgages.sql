@@ -58,17 +58,25 @@ BEGIN
 				a.ReelYear, a.ReelNumber, a.ReelPage
 	FROM	Acris.vwDocumentsByBBLE a
 	WHERE	a.BBLE = @BBLE
-			AND (a.DocumentType = 'MTGE' OR a.DocumentType = 'AGMT'	OR a.DocumentType = 'ASST')
+			AND (a.DocumentType = 'MTGE' OR a.DocumentType = 'M&CON' 
+			--OR a.DocumentType = 'ASST'
+			)
 			AND a.UniqueKey NOT IN 	(	SELECT	c.UniqueKey
-										FROM	[Acris].[vwSatisfactionAndAssignmentCrossReeferenceRecords] a
+										FROM	Acris.vwMortgageSatisfactionCrossReeferenceRecords a
 										INNER JOIN [Acris].[MortgageDeedMaster] c ON c.CRFN = a.CRFN
 										WHERE	a.CRFN IS NOT NULL
 												AND a.BBLE = @BBLE
 										UNION
 										SELECT	c.UniqueKey
-										FROM	[Acris].[vwSatisfactionAndAssignmentCrossReeferenceRecords] a
+										FROM	Acris.vwMortgageSatisfactionCrossReeferenceRecords a
 										INNER JOIN [Acris].[MortgageDeedMaster] c ON c.ReelNumber = a.ReelNumber AND a.ReelPage = c.ReelPage
-										WHERE	a.CRFN IS NULL
+										WHERE	a.ReelNumber!=0 AND a.ReelPage !=0 
+												AND a.BBLE = @BBLE
+										UNION
+										SELECT	c.UniqueKey
+										FROM	Acris.vwMortgageSatisfactionCrossReeferenceRecords a
+										INNER JOIN [Acris].[MortgageDeedMaster] c ON c.UniqueKey = a.DocumentIdReference
+										WHERE	a.DocumentIdReference IS NOT NULL 
 												AND a.BBLE = @BBLE
 										/*
 										UNION
@@ -86,6 +94,9 @@ END
 
 /*
 SELECT * FROM [acris].[tfnGetUnsatisfiedMortgages] ('4068880046') 
+SELECT * FROM [acris].[tfnGetUnsatisfiedMortgages] ('2045100005') 
+SELECT * FROM [acris].[tfnGetUnsatisfiedMortgages] ('3080590055') 
+
 
 SELECT a.* FROM [acris].[tfnGetUnsatisfiedMortgages] ('4068880046') b
 CROSS APPLY [Acris].[tfnGetDocumentPartiesByKey](b.UniqueKey,DEFAULT) a

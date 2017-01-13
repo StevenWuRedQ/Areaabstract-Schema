@@ -2,6 +2,7 @@ SET QUOTED_IDENTIFIER ON
 GO
 SET ANSI_NULLS ON
 GO
+
 -- =============================================
 -- Author:			George Vinsky, Raj Sethi
 
@@ -27,9 +28,10 @@ AS
             s.DeedUniqueKey,
             s.DocumentDate,
             s.DocumentAmount
-    FROM    [dbo].[LatestDeedDocument] s
+    FROM    [dbo].[LatestValidSaleDeedDocument] s
     WHERE   (s.DocumentAmount > 10000 ) 
 	AND (s.DocumentDate>=DATEADD(YEAR, -2, GETDATE()))
+
 
 
 GO

@@ -32,7 +32,9 @@ BEGIN
 	EXEC [dbo].[GetAllPropertiesNotInAssessment]
 	EXEC [dbo].[GetLatestContractOfSaleOrMemorandumOfContract]
 	EXEC [dbo].[GetLatestDeedDocumentForAllProperties]
-
+	EXEC [dbo].[GetLatestValidSaleDeedDocumentForAllProperties]
+	EXEC [arm].[InsertArmsLengthSales]
+	EXEC [arm].[InsertIntoSalesAreCompany]
 END
 
 GO

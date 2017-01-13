@@ -41,5 +41,65 @@ BEGIN
 	SELECT DeedUniqueKey, COUNT(DeedUniqueKey) NumberOfLots FROM [dbo].[LatestDeedDocument] GROUP BY DeedUniqueKey
 END
 
+
+
+/*
+
+SELECT a.*, b.*, DATEDIFF(day,a.DocumentDate,b.DocumentDate)
+FROM Acris.vwDeedsByBBLE a
+INNER JOIN dbo.LatestDeedDocument b on a.bble=b.bble
+
+
+DROP TABLE dbo.deedsWithinSixMonths
+
+SELECT a.*, DATEDIFF(month,a.DocumentDate,b.DocumentDate) MonthDiff
+INTO dbo.deedsWithinSixMonths
+FROM Acris.vwDeedsByBBLE a
+INNER JOIN [dbo].[LatestValidSaleDeedDocument] b on a.bble=b.bble
+INNER JOIN [dbo].[LotsPerLatestDeed] c on c.DeedUniqueKey = b.DeedUniqueKey
+where DATEDIFF(month,a.DocumentDate,b.DocumentDate)<=6 and a.DocumentDate<=b.DocumentDate
+and b.DeedUniqueKey<>a.UniqueKey
+and a.DocumentAmount>10000
+and c.NumberOfLots=1
+
+--64,781
+SELECT b.*
+FROM [dbo].[LatestValidSaleDeedDocument]  b 
+INNER JOIN [dbo].[LotsPerLatestDeed] c on c.DeedUniqueKey = b.DeedUniqueKey
+WHERE DATEDIFF(year,b.DocumentDate,GETDATE())<=2
+and c.NumberOfLots=1
+
+SELECT ROUND(100.00* (b.DocumentAmount-a.DocumentAmount)/a.DocumentAmount,0), DATEDIFF(day,a.DocumentDate,b.DocumentDate), a.*, b.* 
+FROM [dbo].[LatestValidSaleDeedDocument] b 
+INNER JOIN dbo.deedsWithinSixMonths a on a.bble=b.bble
+ORDER BY DATEDIFF(day,a.DocumentDate,b.DocumentDate) DESC
+
+
+
+SELECT ROUND(100.00* (b.DocumentAmount-a.DocumentAmount)/a.DocumentAmount,0), DATEDIFF(day,a.DocumentDate,b.DocumentDate), a.*, b.* 
+FROM [dbo].[LatestValidSaleDeedDocument] b 
+INNER JOIN dbo.deedsWithinSixMonths a on a.bble=b.bble
+INNER JOIN [dbo].[LotsPerLatestDeed] c on c.DeedUniqueKey = b.DeedUniqueKey
+where DATEDIFF(day,a.DocumentDate,b.DocumentDate)>=0
+and b.DocumentAmount<>0
+and a.documentAmount<>b.DocumentAmount
+and DATEDIFF(year,b.DocumentDate,GETDATE())<=2
+and c.NumberOfLots=1
+ORDER BY DATEDIFF(day,a.DocumentDate,b.DocumentDate) DESC
+
+
+SELECT BBLE, COUNT(*)
+FROM dbo.deedsWithinSixMonths
+GROUP BY BBLE
+HAVING COUNT(*)>1
+
+SELECT	*,ROW_NUMBER() OVER (PARTITION BY BBLE ORDER BY DB.DocumentDate DESC, DB.UniqueKey DESC) AS RowNumber
+FROM	Acris.vwDeedsByBBLE DB
+where BBLE ='1000162488'
+			
+
+SELECT DATEDIFF(month,'2005-10-21','2010-01-02')
+
 --EXEC [dbo].[GetLatestDeedDocumentForAllProperties]
+*/
 GO
