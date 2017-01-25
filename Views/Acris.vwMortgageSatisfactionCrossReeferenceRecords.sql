@@ -8,6 +8,7 @@ GO
 
 
 
+
 CREATE VIEW [Acris].[vwMortgageSatisfactionCrossReeferenceRecords]
 AS
 /*
@@ -32,7 +33,7 @@ AS
 
    SELECT a.BBLE, b.* FROM  acris.vwDocumentsByBBLE a
    INNER JOIN [Acris].[MortgageDeedCrossReference] b ON a.uniquekey=b.uniquekey
-   WHERE (a.DocumentType='SAT' OR a.DocumentType='M&CON')
+   WHERE (a.DocumentType='SAT' OR a.DocumentType='M&CON' OR a.DocumentType='AGMT')
    UNION
    SELECT	a.BBLE
 			,a.UniqueKey
@@ -46,7 +47,8 @@ AS
    FROM acris.vwDocumentsByBBLE a 
    LEFT OUTER JOIN [Acris].[MortgageDeedCrossReference] b ON a.uniquekey=b.uniquekey
    WHERE b.Uniquekey IS NULL
-   AND (a.DocumentType='SAT' OR a.DocumentType='M&CON')
+   AND (a.DocumentType='SAT' OR a.DocumentType='M&CON' OR a.DocumentType='AGMT')
+
 
 
 

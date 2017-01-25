@@ -58,36 +58,24 @@ BEGIN
 				a.ReelYear, a.ReelNumber, a.ReelPage
 	FROM	Acris.vwDocumentsByBBLE a
 	WHERE	a.BBLE = @BBLE
-			AND (a.DocumentType = 'MTGE' OR a.DocumentType = 'M&CON' 
-			--OR a.DocumentType = 'ASST'
-			)
+			AND (a.DocumentType = 'MTGE' OR a.DocumentType = 'M&CON' OR a.DocumentType = 'AGMT')
 			AND a.UniqueKey NOT IN 	(	SELECT	c.UniqueKey
-										FROM	Acris.vwMortgageSatisfactionCrossReeferenceRecords a
+										FROM	[Acris].[vwMortgageSatisfactionCrossReeferenceRecords] a
 										INNER JOIN [Acris].[MortgageDeedMaster] c ON c.CRFN = a.CRFN
 										WHERE	a.CRFN IS NOT NULL
 												AND a.BBLE = @BBLE
 										UNION
 										SELECT	c.UniqueKey
-										FROM	Acris.vwMortgageSatisfactionCrossReeferenceRecords a
+										FROM	[Acris].[vwMortgageSatisfactionCrossReeferenceRecords] a
 										INNER JOIN [Acris].[MortgageDeedMaster] c ON c.ReelNumber = a.ReelNumber AND a.ReelPage = c.ReelPage
 										WHERE	a.ReelNumber!=0 AND a.ReelPage !=0 
 												AND a.BBLE = @BBLE
 										UNION
 										SELECT	c.UniqueKey
-										FROM	Acris.vwMortgageSatisfactionCrossReeferenceRecords a
+										FROM	[Acris].[vwMortgageSatisfactionCrossReeferenceRecords] a
 										INNER JOIN [Acris].[MortgageDeedMaster] c ON c.UniqueKey = a.DocumentIdReference
 										WHERE	a.DocumentIdReference IS NOT NULL 
 												AND a.BBLE = @BBLE
-										/*
-										UNION
-										--Sometimes Assignment mortgages have reel-page reference of the previous mortage **** I am not sure about this
-										SELECT	c.UniqueKey
-										FROM	[Acris].[vwSatisfactionAndAssignmentCrossReeferenceRecords] a
-										INNER JOIN	Acris.vwDocumentsByBBLE c ON Acris.fnGetReelNumber(acris.fnGetDocumentRemarks(c.UniqueKey)) = a.ReelNumber AND a.ReelPage = Acris.fnGetReelPage(acris.fnGetDocumentRemarks(c.UniqueKey))
-										WHERE	a.BBLE = @BBLE
-												AND c.BBLE=@BBLE
-												AND (c.DocumentType = 'ASST')
-										*/
 									)
 	RETURN;
 END
@@ -108,5 +96,13 @@ AND (a.DocumentType = 'MTGE' OR a.DocumentType = 'AGMT'	OR a.DocumentType = 'ASS
 
 SELECT * FROM [dbo].[LatestDeedDocument] where BBLe='4068880046'
 SELECT * FROM [Acris].[tfnGetDocumentPartiesByKey]('FT_4740008998174',NULL)
+
+
+SELECT	ROW_NUMBER() OVER (ORDER BY DateRecorded DESC, UniqueKey DESC) RowNo, a.BBLE, a.UniqueKey, a.CRFN, a.PropertyType, a.DocumentType, a.DocumentTypeDescription, 
+				a.DocumentClassCodeDescription, a.DocumentDate, a.DocumentAmount, a.PercentageOfTransaction, a.DateRecorded, a.DateModified, 
+				a.RecordedBorough, acris.fnGetDocumentRemarks(UniqueKey) AS Remarks, a.DateLastUpdated, 'https://a836-acris.nyc.gov/DS/DocumentSearch/DocumentImageView?doc_id='+a.UniqueKey AS URL,
+				a.ReelYear, a.ReelNumber, a.ReelPage
+	FROM	Acris.vwDocumentsByBBLE a
+	WHERE	(a.DocumentType = 'M&CON' OR a.DocumentType = 'AGMT')
 */
 GO
