@@ -20,6 +20,8 @@ ALTER TABLE [Acris].[MortgageDeedMaster] ADD CONSTRAINT [PK_MortgageDeedsMasterU
 GO
 CREATE NONCLUSTERED INDEX [IX_CRFN] ON [Acris].[MortgageDeedMaster] ([CRFN]) ON [PRIMARY]
 GO
+CREATE NONCLUSTERED INDEX [IX_DocumentTypeCode] ON [Acris].[MortgageDeedMaster] ([DocumentTypeCode]) INCLUDE ([DateRecorded], [DocumentDate], [UniqueKey]) ON [PRIMARY]
+GO
 CREATE NONCLUSTERED INDEX [IX_ReelKey] ON [Acris].[MortgageDeedMaster] ([ReelNumber], [ReelPage], [ReelYear]) ON [PRIMARY]
 GO
 EXEC sp_addextendedproperty N'MS_Description', N'This is the Mortgage and Deeds Master Table', 'SCHEMA', N'Acris', 'TABLE', N'MortgageDeedMaster', NULL, NULL
