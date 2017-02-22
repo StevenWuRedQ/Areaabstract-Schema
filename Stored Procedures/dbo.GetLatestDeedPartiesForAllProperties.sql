@@ -13,7 +13,7 @@ BEGIN
 	TRUNCATE TABLE [dbo].[LatestDeedParty];
 	
 	INSERT INTO [dbo].[LatestDeedParty]
-	SELECT * FROM [Acris].[vwLatestDeedParties]
+	SELECT *, Utilities.[util].[IsCompany](a.PartyName,0.5) FROM [Acris].[vwLatestDeedParties] a
 
 END
 

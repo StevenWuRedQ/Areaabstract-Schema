@@ -1,0 +1,3 @@
+CREATE SCHEMA [exdata]
+AUTHORIZATION [dbo]
+GO

@@ -11,8 +11,11 @@ BEGIN
 	SET NOCOUNT ON;
 
 	TRUNCATE TABLE [dbo].[PropertyNotInAssessment];
+	DECLARE @UseMergedAssessment AS BIT
 
-	IF (NYCDOF.dof.UseMergedAssementAndValuation()=1)
+	SELECT @UseMergedAssessment=[UseUseMergedAssementAndValuation] FROM exdata.vwdofStatus
+
+	IF (@UseMergedAssessment=1)
 		INSERT INTO [dbo].[PropertyNotInAssessment]
 		SELECT	a.*
 		FROM	(SELECT	*, ROW_NUMBER() OVER (PARTITION BY BBL ORDER BY StreetNumber DESC, StreetName DESC) AS RowNumber
