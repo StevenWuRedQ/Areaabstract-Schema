@@ -6,9 +6,11 @@ CREATE FUNCTION [Acris].[fnGetDocumentRemarks](@DocUniqueKey VARCHAR(16))
 RETURNS VARCHAR(4096)
 AS
 BEGIN
-	DECLARE @remark VARCHAR(MAX);
+	DECLARE @remark VARCHAR(MAX)='';
 
-	SELECT @remark=COALESCE(@remark,'') + ar.[Text] FROM acris.MortgageDeedRemark AS ar WHERE ar.UniqueKey=@DocUniqueKey ORDER BY ar.[Sequence]
+	--SELECT @remark=COALESCE(@remark,'') + ar.[Text] FROM acris.MortgageDeedRemark AS ar WHERE ar.UniqueKey=@DocUniqueKey ORDER BY ar.[Sequence]
+
+	SELECT @remark = @remark + IIF(LEN(@remark)>0,' ','') + LTRIM(RTRIM(ar.[Text])) FROM acris.MortgageDeedRemark AS ar WHERE ar.UniqueKey=@DocUniqueKey ORDER BY ar.[Sequence]
 
 	RETURN @remark;
 END;
