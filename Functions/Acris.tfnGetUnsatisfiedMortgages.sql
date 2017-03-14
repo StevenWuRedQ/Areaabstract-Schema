@@ -52,36 +52,22 @@ RETURNS @UnsatisfiedMortgages TABLE
 BEGIN
 
 	INSERT @UnsatisfiedMortgages      
-	SELECT	ROW_NUMBER() OVER (ORDER BY DateRecorded DESC, UniqueKey DESC) RowNo, a.BBLE, a.UniqueKey, a.CRFN, a.PropertyType, a.DocumentType, a.DocumentTypeDescription, 
+	SELECT	ROW_NUMBER() OVER (ORDER BY IIF(a.DocumentDate IS NOT NULL, a.DocumentDate, a.DateRecorded) DESC, a.UniqueKey DESC) RowNo, a.BBLE, a.UniqueKey, a.CRFN, a.PropertyType, a.DocumentType, a.DocumentTypeDescription, 
 				a.DocumentClassCodeDescription, a.DocumentDate, a.DocumentAmount, a.PercentageOfTransaction, a.DateRecorded, a.DateModified, 
-				a.RecordedBorough, acris.fnGetDocumentRemarks(UniqueKey) AS Remarks, a.DateLastUpdated, 'https://a836-acris.nyc.gov/DS/DocumentSearch/DocumentImageView?doc_id='+a.UniqueKey AS URL,
+				a.RecordedBorough, acris.fnGetDocumentRemarks(a.UniqueKey) AS Remarks, a.DateLastUpdated, 'https://a836-acris.nyc.gov/DS/DocumentSearch/DocumentImageView?doc_id='+a.UniqueKey AS URL,
 				a.ReelYear, a.ReelNumber, a.ReelPage
-	FROM	Acris.vwDocumentsByBBLE a
-	WHERE	a.BBLE = @BBLE
-			AND (a.DocumentType = 'MTGE' OR a.DocumentType = 'M&CON' OR a.DocumentType = 'AGMT')
-			AND a.UniqueKey NOT IN 	(	SELECT	c.UniqueKey
-										FROM	[Acris].[vwMortgageSatisfactionCrossReeferenceRecords] a
-										INNER JOIN [Acris].[MortgageDeedMaster] c ON c.CRFN = a.CRFN
-										WHERE	a.CRFN IS NOT NULL
-												AND a.BBLE = @BBLE
-										UNION
-										SELECT	c.UniqueKey
-										FROM	[Acris].[vwMortgageSatisfactionCrossReeferenceRecords] a
-										INNER JOIN [Acris].[MortgageDeedMaster] c ON c.ReelNumber = a.ReelNumber AND a.ReelPage = c.ReelPage
-										WHERE	a.ReelNumber!=0 AND a.ReelPage !=0 
-												AND a.BBLE = @BBLE
-										UNION
-										SELECT	c.UniqueKey
-										FROM	[Acris].[vwMortgageSatisfactionCrossReeferenceRecords] a
-										INNER JOIN [Acris].[MortgageDeedMaster] c ON c.UniqueKey = a.DocumentIdReference
-										WHERE	a.DocumentIdReference IS NOT NULL 
-												AND a.BBLE = @BBLE
-									)
+	FROM acris.vwDocumentsByBBLE a
+	LEFT OUTER JOIN [Acris].[tfnMortgageSatisfactionCrossReferenceRecord](@BBLE) b ON ((b.DocumentIdReference IS NOT NULL AND a.UniqueKey=b.DocumentIdReference)
+													OR (b.CRFN IS NOT NULL AND a.CRFN=b.CRFN) 
+													OR (b.Reelnumber<>'00000' AND a.ReelNumber=b.ReelNumber AND a.ReelPage=b.ReelPage ))
+	WHERE (a.DocumentType='M&CON' OR a.DocumentType='AGMT' OR a.DocumentType='MTGE')
+	AND a.bble=@BBLE
+	AND b.UniqueKey IS NULL
 	RETURN;
 END
 
 /*
-SELECT * FROM [acris].[tfnGetUnsatisfiedMortgages] ('4068880046') 
+ SELECT * FROM [acris].[tfnGetUnsatisfiedMortgages] ('4068880046') 
 SELECT * FROM [acris].[tfnGetUnsatisfiedMortgages] ('2045100005') 
 SELECT * FROM [acris].[tfnGetUnsatisfiedMortgages] ('3080590055') 
 

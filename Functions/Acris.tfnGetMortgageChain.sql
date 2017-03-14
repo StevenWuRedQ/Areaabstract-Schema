@@ -37,12 +37,16 @@ AS RETURN
 		  ,'https://a836-acris.nyc.gov/DS/DocumentSearch/DocumentImageView?doc_id='+b.UniqueKey AS RelatedDocumentURL
    FROM acris.vwDocumentsByBBLE a
    LEFT OUTER JOIN [Acris].[tfnMortgageChainRelatedCrossReferenceRecord](@BBLE) b ON ((b.DocumentIdReference IS NOT NULL AND a.UniqueKey=b.DocumentIdReference)
-																			OR (b.CRFN IS NOT NULL AND a.CRFN=b.CRFN) 
-																			OR (b.Reelnumber<>'00000' AND a.ReelNumber=b.ReelNumber AND a.ReelPage=b.ReelPage ))
+																						OR (b.CRFN IS NOT NULL AND a.CRFN=b.CRFN) 
+																						OR (b.Reelnumber<>'00000' AND a.ReelNumber=b.ReelNumber AND a.ReelPage=b.ReelPage ))
    WHERE (a.DocumentType='M&CON' OR a.DocumentType='AGMT' OR a.DocumentType='MTGE')
 		 AND a.bble=@BBLE
 )
 
-
+/*
+SELECT * FROM [acris].[tfnGetMortgageChain]('4068880046') 
+SELECT * FROM [acris].[tfnGetMortgageChain] ('2045100005') 
+SELECT * FROM [acris].[tfnGetMortgageChain] ('3080590055') 
+*/
 
 GO

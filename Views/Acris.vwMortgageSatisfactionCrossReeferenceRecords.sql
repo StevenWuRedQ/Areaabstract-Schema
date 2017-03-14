@@ -9,6 +9,7 @@ GO
 
 
 
+
 CREATE VIEW [Acris].[vwMortgageSatisfactionCrossReeferenceRecords]
 AS
 /*
@@ -41,13 +42,15 @@ AS
 			,NULL AS DcoumentIdReference	
 			,0000 AS ReelYear
 			,0 AS ReelBorough
-			,Acris.fnGetReelNumber(acris.fnGetDocumentRemarks(a.UniqueKey))
-			,Acris.fnGetReelPage(acris.fnGetDocumentRemarks(a.UniqueKey))
+			,c.ReelNumber
+			,c.ReelPage
 			,NULL AS DateLastUpdated 
    FROM acris.vwDocumentsByBBLE a 
+   CROSS APPLY [app].[tfnGetReelNumberAndPage](acris.fnGetDocumentRemarks(a.UniqueKey)) c 
    LEFT OUTER JOIN [Acris].[MortgageDeedCrossReference] b ON a.uniquekey=b.uniquekey
    WHERE b.Uniquekey IS NULL
    AND (a.DocumentType='SAT' OR a.DocumentType='M&CON' OR a.DocumentType='AGMT')
+
 
 
 

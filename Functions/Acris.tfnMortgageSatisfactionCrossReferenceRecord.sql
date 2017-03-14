@@ -23,13 +23,13 @@ GO
 
 -- Where used:		
 -- =============================================
-CREATE FUNCTION [Acris].[tfnMortgageChainRelatedCrossReferenceRecord](@BBLE VARCHAR(11))
+CREATE FUNCTION [Acris].[tfnMortgageSatisfactionCrossReferenceRecord](@BBLE VARCHAR(11))
 RETURNS TABLE
 AS RETURN
 (	
 	SELECT a.BBLE, a.DocumentType, a.DocumentTypeDescription, a.DocumentDate, a.DateRecorded, b.* FROM  acris.vwDocumentsByBBLE a
 	INNER JOIN [Acris].[MortgageDeedCrossReference] b ON a.uniquekey=b.uniquekey
-	WHERE (a.DocumentType='SAT' OR a.DocumentType='M&CON' OR a.DocumentType='AGMT' OR a.DocumentType='ASST')
+	WHERE (a.DocumentType='SAT' OR a.DocumentType='M&CON' OR a.DocumentType='AGMT')
 		AND a.BBLE=@BBLE
 	UNION
 	SELECT	a.BBLE
@@ -49,7 +49,7 @@ AS RETURN
 	CROSS APPLY [app].[tfnGetReelNumberAndPage](acris.fnGetDocumentRemarks(a.UniqueKey)) c 
 	LEFT OUTER JOIN [Acris].[MortgageDeedCrossReference] b ON a.uniquekey=b.uniquekey
 	WHERE b.Uniquekey IS NULL
-		  AND (a.DocumentType='SAT' OR a.DocumentType='M&CON' OR a.DocumentType='AGMT' OR a.DocumentType='ASST')
+		  AND (a.DocumentType='SAT' OR a.DocumentType='M&CON' OR a.DocumentType='AGMT')
 		  AND a.BBLE=@BBLE
 )
 
