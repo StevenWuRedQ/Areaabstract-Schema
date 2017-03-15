@@ -8,7 +8,7 @@ GO
 
 -- Date Created:	
 
--- Dates Modified:	11/21/2016
+-- Dates Modified:	11/21/2016, 03/14/2017
 
 -- Description:		This function returns all mortgage documents that do not have a corresponding satisfaction document
 --					
@@ -24,7 +24,7 @@ GO
 
 -- Where used:		PropertyWebApi
 -- =============================================
-CREATE FUNCTION [Acris].[tfnGetUnsatisfiedMortgages] (@BBLE VARCHAR(10))
+CREATE FUNCTION [app].[tfnGetUnsatisfiedMortgages] (@BBLE VARCHAR(10))
 RETURNS @UnsatisfiedMortgages TABLE 
 (
     -- Columns returned by the function
@@ -57,7 +57,7 @@ BEGIN
 				a.RecordedBorough, acris.fnGetDocumentRemarks(a.UniqueKey) AS Remarks, a.DateLastUpdated, 'https://a836-acris.nyc.gov/DS/DocumentSearch/DocumentImageView?doc_id='+a.UniqueKey AS URL,
 				a.ReelYear, a.ReelNumber, a.ReelPage
 	FROM acris.vwDocumentsByBBLE a
-	LEFT OUTER JOIN [Acris].[tfnMortgageSatisfactionCrossReferenceRecord](@BBLE) b ON ((b.DocumentIdReference IS NOT NULL AND a.UniqueKey=b.DocumentIdReference)
+	LEFT OUTER JOIN [app].[tfnMortgageSatisfactionCrossReferenceRecord](@BBLE) b ON ((b.DocumentIdReference IS NOT NULL AND a.UniqueKey=b.DocumentIdReference)
 													OR (b.CRFN IS NOT NULL AND a.CRFN=b.CRFN) 
 													OR (b.Reelnumber<>'00000' AND a.ReelNumber=b.ReelNumber AND a.ReelPage=b.ReelPage ))
 	WHERE (a.DocumentType='M&CON' OR a.DocumentType='AGMT' OR a.DocumentType='MTGE')
@@ -67,12 +67,12 @@ BEGIN
 END
 
 /*
- SELECT * FROM [acris].[tfnGetUnsatisfiedMortgages] ('4068880046') 
-SELECT * FROM [acris].[tfnGetUnsatisfiedMortgages] ('2045100005') 
-SELECT * FROM [acris].[tfnGetUnsatisfiedMortgages] ('3080590055') 
+ SELECT * FROM [app].[tfnGetUnsatisfiedMortgages] ('4068880046') 
+SELECT * FROM [app].[tfnGetUnsatisfiedMortgages] ('2045100005') 
+SELECT * FROM [app].[tfnGetUnsatisfiedMortgages] ('3080590055') 
 
 
-SELECT a.* FROM [acris].[tfnGetUnsatisfiedMortgages] ('4068880046') b
+SELECT a.* FROM [app].[tfnGetUnsatisfiedMortgages] ('4068880046') b
 CROSS APPLY [Acris].[tfnGetDocumentPartiesByKey](b.UniqueKey,DEFAULT) a
 
 SELECT b.* FROM	Acris.vwDocumentsByBBLE a
