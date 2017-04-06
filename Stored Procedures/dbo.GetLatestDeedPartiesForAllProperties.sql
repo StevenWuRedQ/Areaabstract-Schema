@@ -13,7 +13,9 @@ BEGIN
 	TRUNCATE TABLE [dbo].[LatestDeedParty];
 	
 	INSERT INTO [dbo].[LatestDeedParty]
-	SELECT *, Utilities.[util].[IsCompany](a.PartyName,0.5) FROM [Acris].[vwLatestDeedParties] a
+	SELECT *, NULL
+	--Utilities.[util].[IsCompany](a.PartyName,0.5) 
+	FROM [Acris].[vwLatestDeedParties] a
 
 END
 

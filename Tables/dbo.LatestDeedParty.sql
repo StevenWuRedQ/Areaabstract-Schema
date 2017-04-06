@@ -10,7 +10,7 @@ CREATE TABLE [dbo].[LatestDeedParty]
 [Zip] [varchar] (9) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
 [Country] [varchar] (2) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
 [PartyType] [varchar] (6) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
-[IsCompany] [int] NOT NULL
+[IsCompany] [int] NULL
 ) ON [PRIMARY]
 GO
 CREATE NONCLUSTERED INDEX [IX_LatestDeedParty_BBLE] ON [dbo].[LatestDeedParty] ([BBLE], [PartyType]) ON [PRIMARY]

@@ -10,6 +10,12 @@ BEGIN
 --interfering with SELECT statements.
 	SET NOCOUNT ON;
 
+	TRUNCATE TABLE tmp.AllDeedsDocuments
+	INSERT tmp.AllDeedsDocuments
+	SELECT	*
+			,ROW_NUMBER() OVER (PARTITION BY BBLE ORDER BY DB.DocumentDate DESC, DB.UniqueKey DESC) AS RowNumber
+	FROM Acris.vwDeedsByBBLE DB
+
 	TRUNCATE TABLE dbo.LatestDeedDocument;
 	
 	INSERT	INTO dbo.LatestDeedDocument
@@ -29,13 +35,11 @@ BEGIN
 		   ,'https://a836-acris.nyc.gov/DS/DocumentSearch/DocumentImageView?doc_id='+DB1.UniqueKey AS URL
 		   ,DB1.DateLastUpdated
 		   ,GETDATE() AS DateProcessed
-	FROM	(SELECT	*
-				   ,ROW_NUMBER() OVER (PARTITION BY BBLE ORDER BY DB.DocumentDate DESC, DB.UniqueKey DESC) AS RowNumber
-			 FROM	Acris.vwDeedsByBBLE DB
-			) DB1
+	FROM	tmp.AllDeedsDocuments DB1
 	WHERE	DB1.RowNumber = 1;
 
-
+	TRUNCATE TABLE tmp.AllDeedsDocuments
+	
 	TRUNCATE TABLE dbo.LotsPerLatestDeed;
 	INSERT INTO dbo.LotsPerLatestDeed
 	SELECT DeedUniqueKey, COUNT(DeedUniqueKey) NumberOfLots FROM [dbo].[LatestDeedDocument] GROUP BY DeedUniqueKey
